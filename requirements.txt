@@ -1,0 +1,5 @@
+pypng
+zbar
+pillow
+qrtools
+qrcode
