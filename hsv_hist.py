@@ -45,7 +45,7 @@ def detect_color(h):
     return colors
 
 
-img = cv2.imread('block01.png')
+img = cv2.imread('image/block01.png')
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 mask = cv2.inRange(hsv, np.array((0., 20., 0.)), np.array((180., 255., 255.)))
 # colors = ('h', 's', 'v')
