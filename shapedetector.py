@@ -7,6 +7,12 @@ from scipy.spatial import distance
 import imutils
 
 
+red_range1 = (0, 30)
+red_range2 = (150, 180)
+green_range = (30, 90)
+blue_range = (90, 140)
+
+
 def angle_cos(p0, p1, p2):
     d1, d2 = (p0-p1).astype('float'), (p2-p1).astype('float')
     return np.abs(np.dot(d1, d2) / np.sqrt(np.dot(d1, d1)*np.dot(d2, d2)))
@@ -25,13 +31,35 @@ def detect_square(cnt):
     return False, None
 
 
+def detect_color(roi):
+    hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, np.array((0., 20., 0.)), np.array((180., 255., 255.)))
+
+    h = cv2.calcHist([hsv], [0], mask, [180], [0, 180])
+    rval = np.sum(h[red_range1[0]:red_range1[1]]) + np.sum(h[red_range2[0]:red_range1[1]])
+    gval = np.sum(h[green_range[0]:green_range[1]])
+    bval = np.sum(h[blue_range[0]:blue_range[1]])
+
+    colors = []
+    if rval > 0.5:
+        colors.append('red')
+    if gval > 0.5:
+        colors.append('green')
+    if bval > 0.5:
+        colors.append('blue')
+
+    return colors
+
+
 def detect_color_in(img, cnt):
     w, h = img.shape[:2]
     cnt = cnt.reshape(-1, 2)
     square_pnts = np.float32([[0, 0], [100, 0], [100, 100]])
     mtx = cv2.getAffineTransform(np.float32(cnt[:3]), square_pnts)
     dst = cv2.warpAffine(img, mtx, (w, h))
-    return dst
+    roi = dst[0:50, 0:50]
+    colors = detect_color(roi)
+    return colors, dst
 
 
 if __name__ == '__main__':
@@ -72,8 +100,9 @@ if __name__ == '__main__':
     for i, cnt_idx in enumerate(found):
         is_square, c = detect_square(contours[cnt_idx])
         if is_square:
-            dst = detect_color_in(image, c)
+            colors, dst = detect_color_in(image, c)
             cv2.imshow('rotated:%d' % i, dst)
+            print 'color:%d:' % i, colors
             # cv2.drawContours(colorful_gray, [c], 0, (0, 255, 0), 2)
 
     # cv2.imshow('edge', edges)
