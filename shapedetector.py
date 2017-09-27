@@ -33,33 +33,43 @@ def detect_square(cnt):
 
 def detect_color(roi):
     hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, np.array((0., 20., 0.)), np.array((180., 255., 255.)))
 
-    h = cv2.calcHist([hsv], [0], mask, [180], [0, 180])
-    rval = np.sum(h[red_range1[0]:red_range1[1]]) + np.sum(h[red_range2[0]:red_range1[1]])
-    gval = np.sum(h[green_range[0]:green_range[1]])
-    bval = np.sum(h[blue_range[0]:blue_range[1]])
+    mask = cv2.inRange(hsv, (0., 20., 0.), (180., 255., 255.))
+    white_mask = cv2.inRange(hsv, (0., 0., 200.), (180., 20., 255.))
 
-    colors = []
-    if rval > 0.5:
-        colors.append('red')
-    if gval > 0.5:
-        colors.append('green')
-    if bval > 0.5:
-        colors.append('blue')
+    h, w = white_mask.shape[:2]
+    cnz = cv2.countNonZero(white_mask)
+    if np.float32(cnz) / (h * w) > 0.85:
+        return 'white'
 
-    return colors
+    hst = cv2.calcHist([hsv], [0], mask, [180], [0, 180])
+    rval = np.sum(hst[red_range1[0]:red_range1[1]]) + np.sum(hst[red_range2[0]:red_range1[1]])
+    gval = np.sum(hst[green_range[0]:green_range[1]])
+    bval = np.sum(hst[blue_range[0]:blue_range[1]])
+
+    if rval > 0.8:
+        return 'red'
+    elif gval > 0.8:
+        return 'green'
+    elif bval > 0.8:
+        return 'blue'
+    return 'unknown'
+
 
 
 def detect_color_in(img, cnt):
-    w, h = img.shape[:2]
+    x, y, w, h = cv2.boundingRect(cnt)
     cnt = cnt.reshape(-1, 2)
     square_pnts = np.float32([[0, 0], [100, 0], [100, 100]])
     mtx = cv2.getAffineTransform(np.float32(cnt[:3]), square_pnts)
     dst = cv2.warpAffine(img, mtx, (w, h))
-    roi = dst[0:50, 0:50]
-    colors = detect_color(roi)
-    return colors, dst
+
+    roi1, roi2, roi3, roi4 = dst[0:50, 0:50], dst[50:100, 0:50], dst[50:100, 50:100], dst[0:50, 50:100]
+    colours = detect_color(roi1), detect_color(roi2), detect_color(roi3), detect_color(roi4)
+    for idx, color in enumerate(colours):
+        if color == 'white':
+            colours = colours[idx:] + colours[:idx]
+    return colours, dst
 
 
 if __name__ == '__main__':
