@@ -56,7 +56,6 @@ def detect_color(roi):
     return 'unknown'
 
 
-
 def detect_color_in(img, cnt):
     x, y, w, h = cv2.boundingRect(cnt)
     cnt = cnt.reshape(-1, 2)
