@@ -24,15 +24,13 @@ def cluster_boxes(box_list):
     return results
 
 
-def detect_qrcode(img, box_list):
-    return box(1, 1, 3, 3)
-
-
 cap = cv2.VideoCapture(0)
 fgbg = cv2.createBackgroundSubtractorMOG2()
-fgbg.setHistory(30)
 
-tracker = cv2.TrackerKCF_create()
+history = 15
+for i in xrange(history):
+    fgbg.setHistory(history)
+
 
 kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 
@@ -56,12 +54,6 @@ while True:
         boxes.append(box(x, y, (x + w), (y + h)))
 
     boxes = cluster_boxes(boxes)
-    # qr_box = detect_qrcode(frame, boxes)
-    # if qr_box:
-    #     x0, y0, x1, y1 = qr_box.bounds
-    #     cv2.rectangle(frame, (int(x0), int(y0)), (int(x1), int(y1)), (255, 0, 0), 2)
-
-    # r = cv2.selectROI("roi", frame, False, False)
 
     for b in boxes:
         x0, y0, x1, y1 = b.bounds

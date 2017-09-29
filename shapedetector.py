@@ -89,10 +89,10 @@ def detect_color_in(img, cnt):
 wb = cv2.xphoto.createSimpleWB()
 
 if __name__ == '__main__':
-    # image = cv2.imread('roi_test.png')
+    image = cv2.imread('roi_test.png')
     # image = cv2.imread('image/pic01.jpg')
     # image = cv2.imread('image/pic02.jpg')
-    image = cv2.imread('image/pic03.jpg')
+    # image = cv2.imread('image/pic03.jpg')
     # image = cv2.imread('image/colorblock02.png')
 
     image = wb.balanceWhite(image)
@@ -130,8 +130,8 @@ if __name__ == '__main__':
             # cv2.drawContours(colorful_gray, [contours[k]], 0, (0, 0, 255), 5)
             # if area1 == 0:
             #     print 'area1 == 0:', contours[k]
-            # if area1 < 80:
-            #     break
+            # if area1 < 36:
+            #     continue
             c = c + 1
 
         # print 'c:', c
