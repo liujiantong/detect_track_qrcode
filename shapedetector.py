@@ -32,7 +32,7 @@ def detect_square(cnt):
         ws = [distance.euclidean(cnt[i], cnt[(i + 1) % 4]) for i in xrange(4)]
         max_cos = np.max([angle_cos(cnt[i], cnt[(i + 1) % 4], cnt[(i + 2) % 4]) for i in xrange(4)])
         z_val = np.std(ws) / np.mean(ws)
-        print 'z_val:%s, max_cos:%s' % (z_val, max_cos)
+        # print 'z_val:%s, max_cos:%s' % (z_val, max_cos)
         if z_val < 0.18 and max_cos < 0.35:
             return True, cnt
     return False, None
@@ -47,7 +47,7 @@ def detect_color(roi):
     h, w = white_mask.shape[:2]
     cnz = cv2.countNonZero(white_mask)
     wr = np.float32(cnz) / (h * w)
-    print (h, w), 'cnz:', cnz, 'white rate:', wr
+    # print (h, w), 'cnz:', cnz, 'white rate:', wr
     if wr > 0.80:
         return 'white'
 
@@ -57,7 +57,7 @@ def detect_color(roi):
     rval = np.sum(hst[red_range1[0]:red_range1[1]]) + np.sum(hst[red_range2[0]:red_range1[1]])
     gval = np.sum(hst[green_range[0]:green_range[1]])
     bval = np.sum(hst[blue_range[0]:blue_range[1]])
-    print 'color values:', rval, gval, bval
+    # print 'color values:', rval, gval, bval
 
     if rval > 0.8:
         return 'red'
@@ -92,7 +92,8 @@ if __name__ == '__main__':
     # image = cv2.imread('roi_test.png')
     # image = cv2.imread('image/pic01.jpg')
     # image = cv2.imread('image/pic02.jpg')
-    image = cv2.imread('image/colorblock02.png')
+    image = cv2.imread('image/pic03.jpg')
+    # image = cv2.imread('image/colorblock02.png')
 
     image = wb.balanceWhite(image)
     h, w = image.shape[:2]
