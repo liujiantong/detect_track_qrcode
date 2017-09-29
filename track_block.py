@@ -1,9 +1,50 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# import numpy as np
+
 import cv2
-from shapely.geometry import box
+import numpy as np
+import shapely.geometry as geom
+
+import shapedetector as sd
+
+
+def detect_sq(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.medianBlur(gray, 3)
+
+    edges = cv2.Canny(blurred, 60, 200)
+    # edges = cv2.Canny(gray, 100, 200)
+    _, contours, hierarchy = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    if hierarchy is None:
+        return
+
+    hierarchy = hierarchy[0]
+
+    found = []
+    for cnt_idx in range(len(contours)):
+        area = cv2.contourArea(contours[cnt_idx], oriented=True)
+        if area < 400:
+            continue
+
+        k = cnt_idx
+        c = 0
+        while hierarchy[k][2] != -1:
+            k = hierarchy[k][2]
+            c = c + 1
+        if c > 2:
+            found.append(cnt_idx)
+
+    for i, cnt_idx in enumerate(found):
+        is_square, c = sd.detect_square(contours[cnt_idx])
+        if is_square:
+            print 'found squared'
+            x, y, width, height = cv2.boundingRect(contours[cnt_idx])
+            roi = image[y:y + height, x:x + width]
+            cv2.imwrite("roi.png", roi)
+            colors, dst = sd.detect_color_in(roi, c)
+            print 'color:%d:' % i, colors
 
 
 def cluster_boxes(box_list):
@@ -22,10 +63,6 @@ def cluster_boxes(box_list):
             results.append(b)
 
     return results
-
-
-def detect_qrcode(img, box_list):
-    return box(1, 1, 3, 3)
 
 
 cap = cv2.VideoCapture(0)
@@ -53,20 +90,15 @@ while True:
         if area < 200:
             continue
         x, y, w, h = cv2.boundingRect(c)
-        boxes.append(box(x, y, (x + w), (y + h)))
+        boxes.append(geom.box(x, y, (x + w), (y + h)))
 
     boxes = cluster_boxes(boxes)
-    # qr_box = detect_qrcode(frame, boxes)
-    # if qr_box:
-    #     x0, y0, x1, y1 = qr_box.bounds
-    #     cv2.rectangle(frame, (int(x0), int(y0)), (int(x1), int(y1)), (255, 0, 0), 2)
 
-    # r = cv2.selectROI("roi", frame, False, False)
+    for box in boxes:
+        x0, y0, x1, y1 = np.int32(box.bounds)
+        # cv2.rectangle(frame, (x0, y0), (x1, y1), (0, 255, 0), 2)
 
-    for b in boxes:
-        x0, y0, x1, y1 = b.bounds
-        cv2.rectangle(frame, (int(x0), int(y0)), (int(x1), int(y1)), (0, 255, 0), 2)
-
+    detect_sq(frame)
     cv2.imshow('video_fg', frame)
 
     k = cv2.waitKey(30) & 0xff
