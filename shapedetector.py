@@ -4,7 +4,10 @@
 import cv2
 import numpy as np
 from scipy.spatial import distance
+
 import imutils
+
+from polygon import check_contain
 
 
 red_range1 = (0, 30)
@@ -86,10 +89,10 @@ def detect_color_in(img, cnt):
 wb = cv2.xphoto.createSimpleWB()
 
 if __name__ == '__main__':
-    image = cv2.imread('roi_test.png')
+    # image = cv2.imread('roi_test.png')
     # image = cv2.imread('image/pic01.jpg')
     # image = cv2.imread('image/pic02.jpg')
-    # image = cv2.imread('image/colorblock02.png')
+    image = cv2.imread('image/colorblock02.png')
 
     image = wb.balanceWhite(image)
     h, w = image.shape[:2]
@@ -106,7 +109,7 @@ if __name__ == '__main__':
     hierarchy = hierarchy[0]
 
     print 'hierarchy.len:', len(hierarchy)
-    print 'hierarchy:', hierarchy
+    # print 'hierarchy:', hierarchy
 
     found = []
     # for h in hierarchy:
@@ -130,24 +133,31 @@ if __name__ == '__main__':
             #     break
             c = c + 1
 
-        print 'c:', c
-        if c >= 1:
+        # print 'c:', c
+        if c > 0:
             found.append(cnt_idx)
 
     print 'found.len:', len(found)
 
-    for i, cnt_idx in enumerate(found):
-        is_square, c = detect_square(contours[cnt_idx])
-        if is_square:
-            colors, dst = detect_color_in(image, c)
-            cv2.imshow('rotated:%d' % i, dst)
-            print 'color:%d:' % i, colors
-            cv2.drawContours(colorful_gray, [c], 0, (0, 255, 0), 2)
+    if len(found) > 0:
+        square_cnts = []
+        for i, cnt_idx in enumerate(found):
+            is_square, c = detect_square(contours[cnt_idx])
+            if is_square:
+                square_cnts.append(c)
+                cv2.drawContours(colorful_gray, [c], 0, (0, 255, 0), 2)
 
-    # cv2.imshow('edge', edges)
-    cv2.imshow("colorful_gray", colorful_gray)
-    cv2.waitKey(0)
+        bbox = check_contain(square_cnts)
+        colors, dst = detect_color_in(image, bbox)
+        cv2.imshow('rotated:%d' % i, dst)
+        print 'color:%d:' % i, colors
 
-    cv2.destroyAllWindows()
+        cv2.drawContours(colorful_gray, [bbox], 0, (0, 0, 255), 3)
+
+        # cv2.imshow('edge', edges)
+        cv2.imshow("colorful_gray", colorful_gray)
+        cv2.waitKey(0)
+
+        cv2.destroyAllWindows()
 
 
