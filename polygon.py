@@ -8,6 +8,9 @@ from shapely.strtree import STRtree
 
 
 def check_contain(rects):
+    if not rects:
+        return None
+
     polygons = [Polygon(np.int32(r)) for r in rects]
     tree = STRtree(polygons)
 

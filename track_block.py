@@ -69,7 +69,7 @@ cap = cv2.VideoCapture(0)
 fgbg = cv2.createBackgroundSubtractorMOG2()
 fgbg.setHistory(30)
 
-tracker = cv2.TrackerKCF_create()
+# tracker = cv2.TrackerKCF_create()
 
 kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 

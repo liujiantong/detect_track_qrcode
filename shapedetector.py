@@ -86,9 +86,6 @@ def detect_color_in(img, cnt):
     return colours, dst
 
 
-wb = cv2.xphoto.createSimpleWB()
-
-
 def find_contours(gray):
     # global contours, found, cnt_idx, c
     blurred = cv2.medianBlur(gray, 5)
@@ -119,7 +116,7 @@ def find_contours(gray):
     return found_cnts
 
 
-def detect_color_from_contours(cnts):
+def detect_color_from_contours(img, cnts):
     # global i, bbox, colors, dst
     square_cnts = []
     for i, cnt0 in enumerate(cnts):
@@ -130,8 +127,11 @@ def detect_color_from_contours(cnts):
             # cv2.imshow('rotated:%d' % i, dst)
             # print 'color:%d:' % i, colors
 
+    if not square_cnts:
+        return [], None
+
     bbox = check_contain(square_cnts)
-    colors, dst = detect_color_in(image, bbox)
+    colors, dst = detect_color_in(img, bbox)
     return colors, bbox
 
 
@@ -142,6 +142,7 @@ if __name__ == '__main__':
     # image = cv2.imread('image/pic03.jpg')
     # image = cv2.imread('image/colorblock02.png')
 
+    wb = cv2.xphoto.createSimpleWB()
     image = wb.balanceWhite(image)
     h, w = image.shape[:2]
     if h > 800:
@@ -155,7 +156,7 @@ if __name__ == '__main__':
     print 'found.len:', len(founds)
 
     if len(founds) > 0:
-        colors, bbox = detect_color_from_contours(founds)
+        colors, bbox = detect_color_from_contours(image, founds)
         cv2.drawContours(colorful_gray, [bbox], 0, (0, 0, 255), 2)
 
         print 'colors:', colors
