@@ -26,10 +26,7 @@ def cluster_boxes(box_list):
 
 cap = cv2.VideoCapture(0)
 fgbg = cv2.createBackgroundSubtractorMOG2()
-
-history = 15
-for i in xrange(history):
-    fgbg.setHistory(history)
+fgbg.setHistory(30)
 
 
 kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
