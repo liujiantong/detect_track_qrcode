@@ -7,7 +7,7 @@ from scipy.spatial import distance
 
 import imutils
 
-from polygon import check_contain
+from polygon import check_cnt_contain
 
 
 red_range1 = (0, 30)
@@ -130,9 +130,9 @@ def detect_color_from_contours(img, cnts):
     if not square_cnts:
         return [], None
 
-    bbox = check_contain(square_cnts)
-    colors, dst = detect_color_in(img, bbox)
-    return colors, bbox
+    bound_cnt = check_cnt_contain(square_cnts)
+    colors, dst = detect_color_in(img, bound_cnt)
+    return colors, bound_cnt
 
 
 if __name__ == '__main__':
@@ -156,8 +156,8 @@ if __name__ == '__main__':
     print 'found.len:', len(founds)
 
     if len(founds) > 0:
-        colors, bbox = detect_color_from_contours(image, founds)
-        cv2.drawContours(colorful_gray, [bbox], 0, (0, 0, 255), 2)
+        colors, cnt = detect_color_from_contours(image, founds)
+        cv2.drawContours(colorful_gray, [cnt], 0, (0, 0, 255), 2)
 
         print 'colors:', colors
         # cv2.imshow('edge', edges)

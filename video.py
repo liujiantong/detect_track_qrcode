@@ -68,9 +68,7 @@ def union_rects(rects):
 
 
 cap = cv2.VideoCapture(0)
-fgbg = cv2.createBackgroundSubtractorMOG2()
-fgbg.setHistory(30)
-
+fgbg = cv2.createBackgroundSubtractorMOG2(history=300)
 kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 
 # track_init = False
@@ -84,20 +82,7 @@ while True:
     _, fg_mask = cv2.threshold(fg_mask, 60, 255, cv2.THRESH_BINARY)
     im2, contours, hierarchy = cv2.findContours(fg_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    boxes = []
-    for c in contours:
-        area = cv2.contourArea(c)
-        if area < 20:
-            continue
-        boxes.append(cv2.boundingRect(c))
-        # x, y, w, h = cv2.boundingRect(c)
-        # boxes.append(geom.box(x, y, (x + w), (y + h)))
-    # boxes = cluster_boxes(boxes)
-
-    for b in boxes:
-        x0, y0, w, h = b
-        cv2.rectangle(frame, (x0, y0), (x0 + w, y0 + h), (0, 0, 255), 2)
-
+    boxes = [cv2.boundingRect(c) for c in contours if cv2.contourArea(c) > 100]
     urect = union_rects(boxes)
     # grp_boxes = group_rects(boxes)
     # print 'boxes:', boxes, 'weights:', weights
