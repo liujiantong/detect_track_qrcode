@@ -59,7 +59,7 @@ if __name__ == '__main__':
     prediction = np.zeros((2, 1), np.float32)
 
     fgbg = cv2.createBackgroundSubtractorMOG2(history=300)
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
     wb = cv2.xphoto.createSimpleWB()
 
     cap = cv2.VideoCapture(0)
