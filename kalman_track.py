@@ -35,7 +35,7 @@ def union_rects(rects):
     return cv2.boundingRect(np.array(pnts))
 
 
-def compute_bound_rect(fgbg, frame):
+def compute_bound_rect(fgbg, frame, max_x, max_y):
     fg_mask = fgbg.apply(frame)
     fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, kernel)
     fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_CLOSE, kernel)
@@ -44,7 +44,13 @@ def compute_bound_rect(fgbg, frame):
     im2, contours, hierarchy = cv2.findContours(fg_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     boxes = [cv2.boundingRect(c) for c in contours if cv2.contourArea(c) > 100]
-    return union_rects(boxes)
+    if not boxes:
+        return None
+    
+    x, y, w, h = union_rects(boxes)
+    w = w if x+w < max_x else max_x-x
+    h = h if y+h < max_y else max_y-y
+    return np.int32([x, y, w, h])
 
 
 def center(points):
@@ -69,8 +75,8 @@ if __name__ == '__main__':
     while True:
         _, frame = cap.read()
         # FIXME: united_rect out of range
-        united_rect = compute_bound_rect(fgbg, frame)
-        if united_rect:
+        united_rect = compute_bound_rect(fgbg, frame, width, height)
+        if united_rect is not None:
             # print 'united_rect:', united_rect
             x0, y0, w, h = united_rect
             cv2.rectangle(frame, (x0, y0), (x0 + w, y0 + h), (0, 255, 0), 2)
