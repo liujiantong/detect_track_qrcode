@@ -90,12 +90,16 @@ def find_contours(gray):
     # global contours, found, cnt_idx, c
     blurred = cv2.medianBlur(gray, 5)
     edges = cv2.Canny(blurred, 100, 120)
-    _, contours, hierarchy = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    hierarchy = hierarchy[0]
-    print 'hierarchy.len:', len(hierarchy)
-    # print 'hierarchy:', hierarchy
 
     found_cnts = []
+    _, contours, hierarchy = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    if hierarchy is None or hierarchy.size == 0:
+        return found_cnts
+
+    hierarchy = hierarchy[0]
+    # print 'hierarchy.len:', len(hierarchy)
+    # print 'hierarchy:', hierarchy
+
     for cnt_idx in range(len(contours)):
         area = cv2.contourArea(contours[cnt_idx], oriented=True)
         # if area < 0

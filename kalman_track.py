@@ -75,20 +75,22 @@ if __name__ == '__main__':
             cv2.rectangle(frame, (x0, y0), (x0 + w, y0 + h), (0, 255, 0), 2)
 
             rx, ry, rw, rh = united_rect
-            roi_image = frame[rx:rx+rw, ry+rh]
-            roi_image = wb.balanceWhite(roi_image)
+            roi_image = frame[rx:rx+rw, ry:ry+rh]
+            # roi_image = wb.balanceWhite(roi_image)
 
             roi_gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
 
             founds = detector.find_contours(roi_gray)
             if founds:
                 colors, cnt = detector.detect_color_from_contours(roi_image, founds)
-                cnt = np.array([(x+rw, y+ry) for (x, y) in cnt])
-                cv2.drawContours(frame, [cnt], 0, (0, 0, 255), 2)
-                kalman.correct(center(cnt))
-                prediction = kalman.predict()
-                (px, py), p_radius = cv2.minEnclosingCircle(cnt)
-                cv2.circle(frame, (prediction[0], prediction[1]), int(p_radius), (255, 0, 0))
+                # print 'colors:', colors, 'cnt:', cnt, 'type(cnt):', type(cnt)
+                if cnt is not None:
+                    cnt = cnt + np.array([rx, ry])
+                    cv2.drawContours(frame, [cnt], 0, (0, 0, 255), 2)
+                    kalman.correct(center(cnt))
+                    prediction = kalman.predict()
+                    (px, py), p_radius = cv2.minEnclosingCircle(cnt)
+                    cv2.circle(frame, (prediction[0], prediction[1]), int(p_radius), (255, 0, 0))
 
             cv2.imshow('frame', frame)
             k = cv2.waitKey(10) & 0xFF
