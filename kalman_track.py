@@ -17,11 +17,11 @@ def init_kalman():
     return kalman
 
 
-def get_frame_size(w, h, max_width=1024):
-    if w < max_width:
-        return w, h
-    ratio = max_width / float(w)
-    return max_width, np.int32(ratio * h)
+def get_frame_size(fw, fh, max_width=1024):
+    if fw < max_width:
+        return fw, fh
+    ratio = max_width / float(fw)
+    return max_width, np.int32(ratio * fh)
 
 
 def union_rects(rects):
@@ -64,17 +64,21 @@ if __name__ == '__main__':
 
     cap = cv2.VideoCapture(0)
     width, height = cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    frame_size = get_frame_size(width, height)
+    # frame_size = get_frame_size(width, height)
 
     while True:
         _, frame = cap.read()
-
+        # FIXME: united_rect out of range
         united_rect = compute_bound_rect(fgbg, frame)
         if united_rect:
+            # print 'united_rect:', united_rect
             x0, y0, w, h = united_rect
             cv2.rectangle(frame, (x0, y0), (x0 + w, y0 + h), (0, 255, 0), 2)
 
             rx, ry, rw, rh = united_rect
+            if rw == 0 or rh == 0:
+                continue
+
             roi_image = frame[rx:rx+rw, ry:ry+rh]
             # roi_image = wb.balanceWhite(roi_image)
 
@@ -85,12 +89,13 @@ if __name__ == '__main__':
                 colors, cnt = detector.detect_color_from_contours(roi_image, founds)
                 # print 'colors:', colors, 'cnt:', cnt, 'type(cnt):', type(cnt)
                 if cnt is not None:
+                    print 'colors:', colors
                     cnt = cnt + np.array([rx, ry])
                     cv2.drawContours(frame, [cnt], 0, (0, 0, 255), 2)
                     kalman.correct(center(cnt))
                     prediction = kalman.predict()
                     (px, py), p_radius = cv2.minEnclosingCircle(cnt)
-                    cv2.circle(frame, (prediction[0], prediction[1]), int(p_radius), (255, 0, 0))
+                    cv2.circle(frame, (prediction[0], prediction[1]), np.int32(p_radius), (255, 0, 0))
 
             cv2.imshow('frame', frame)
             k = cv2.waitKey(10) & 0xFF
