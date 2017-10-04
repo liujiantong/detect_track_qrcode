@@ -67,14 +67,26 @@ def union_rects(rects):
     return cv2.boundingRect(np.array(pnts))
 
 
+def get_frame_size(fw, fh, max_width=1024):
+    if fw < max_width:
+        return fw, fh
+    ratio = max_width / float(fw)
+    return max_width, np.int32(ratio * fh)
+
+
 cap = cv2.VideoCapture(0)
 fgbg = cv2.createBackgroundSubtractorMOG2(history=300)
-kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
 
 # track_init = False
 
 while True:
     _, frame = cap.read()
+    width, height = cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    width, height = get_frame_size(width, height)
+    frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_AREA)
+    frame = cv2.flip(frame, flipCode=1)
+
     fg_mask = fgbg.apply(frame)
     fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, kernel)
     fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_CLOSE, kernel)

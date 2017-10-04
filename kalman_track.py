@@ -60,6 +60,13 @@ def center(points):
     return np.array([np.float32(cx), np.float32(cy)], np.float32)
 
 
+def show_video(frm):
+    cv2.imshow('frame', frm)
+    k = cv2.waitKey(10) & 0xFF
+    if k == 27 or k == ord('q'):
+        return True
+
+
 if __name__ == '__main__':
     kalman = init_kalman()
     measurement = np.array((2, 1), np.float32)
@@ -71,11 +78,11 @@ if __name__ == '__main__':
 
     cap = cv2.VideoCapture(0)
     width, height = cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    frame_size = get_frame_size(width, height)
+    width, height = get_frame_size(width, height)
 
     while True:
         _, frame = cap.read()
-        frame = cv2.resize(frame, frame_size, interpolation=cv2.INTER_AREA)
+        frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_AREA)
         frame = cv2.flip(frame, flipCode=1)
 
         # united_rect out of range
@@ -88,7 +95,8 @@ if __name__ == '__main__':
             rx, ry, rw, rh = united_rect
             roi_image = frame[rx:rx+rw, ry:ry+rh]
             if roi_image.size == 0:
-                cv2.imshow('frame', frame)
+                if show_video(frame):
+                    break
                 continue
 
             roi_image = wb.balanceWhite(roi_image)
@@ -96,7 +104,8 @@ if __name__ == '__main__':
 
             founds = detector.find_contours(roi_gray)
             if not founds:
-                cv2.imshow('frame', frame)
+                if show_video(frame):
+                    break
                 continue
 
             colors, cnt = detector.detect_color_from_contours(roi_image, founds)
@@ -110,9 +119,7 @@ if __name__ == '__main__':
                 (px, py), p_radius = cv2.minEnclosingCircle(cnt)
                 cv2.circle(frame, (prediction[0], prediction[1]), np.int32(p_radius), (255, 0, 0))
 
-            cv2.imshow('frame', frame)
-            k = cv2.waitKey(10) & 0xFF
-            if k == 27 or k == ord('q'):
+            if show_video(frame):
                 break
 
     cv2.destroyAllWindows()
