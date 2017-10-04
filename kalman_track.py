@@ -4,7 +4,6 @@
 import numpy as np
 import cv2
 
-import imutils
 import shapedetector as detector
 
 
@@ -60,14 +59,15 @@ def center(points):
     return np.array([np.float32(cx), np.float32(cy)], np.float32)
 
 
-def show_video(frm, roi):
+def show_video(frm, roi=None):
     cv2.imshow('frame', frm)
     k = cv2.waitKey(10) & 0xFF
     if k == 27 or k == ord('q'):
         return True
     elif k == ord('s'):
         cv2.imwrite('kalman_frame.png', frm)
-        cv2.imwrite('kalman_roi.png', roi)
+        if not roi:
+            cv2.imwrite('kalman_roi.png', roi)
     return False
 
 
@@ -81,8 +81,8 @@ if __name__ == '__main__':
     wb = cv2.xphoto.createSimpleWB()
 
     cap = cv2.VideoCapture(0)
-    width, height = cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    width, height = get_frame_size(width, height)
+    width0, height0 = cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    width, height = get_frame_size(width0, height0)
 
     while True:
         _, frame = cap.read()
@@ -93,18 +93,12 @@ if __name__ == '__main__':
         united_rect = compute_bound_rect(fgbg, frame, width, height)
         if united_rect is not None:
             # print 'united_rect:', united_rect
-            x0, y0, w, h = united_rect
-            cv2.rectangle(frame, (x0, y0), (x0 + w, y0 + h), (0, 255, 0), 2)
+            roi_x, roi_y, roi_w, roi_h = united_rect
+            cv2.rectangle(frame, (roi_x, roi_y), (roi_x + roi_w, roi_y + roi_h), (0, 255, 0), 2)
 
-            # FIXME: united_rect is empty
-            # rx, ry, rw, rh = united_rect
-            roi_image = frame[y0:y0+h, x0:x0+w]
-            if roi_image.size == 0:
-                if show_video(frame, roi_image):
-                    break
-                continue
+            roi_image = frame[roi_y:roi_y + roi_h, roi_x:roi_x + roi_w]
 
-            # roi_image = wb.balanceWhite(roi_image)
+            roi_image = wb.balanceWhite(roi_image)
             roi_gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
 
             founds = detector.find_contours(roi_gray)
@@ -118,7 +112,7 @@ if __name__ == '__main__':
             # print 'colors:', colors, 'cnt:', cnt, 'type(cnt):', type(cnt)
             if cnt is not None:
                 print 'colors:', colors
-                cnt = cnt + np.array([x0, y0])
+                cnt = cnt + np.array([roi_x, roi_y])
                 cv2.drawContours(frame, [cnt], 0, (0, 0, 255), 2)
                 kalman.correct(center(cnt))
                 prediction = kalman.predict()
