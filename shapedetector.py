@@ -142,9 +142,10 @@ def detect_color_from_contours(img, cnts):
 if __name__ == '__main__':
     # image = cv2.imread('roi_test.png')
     # image = cv2.imread('image/pic01.jpg')
-    image = cv2.imread('image/pic02.jpg')
+    # image = cv2.imread('image/pic02.jpg')
     # image = cv2.imread('image/pic03.jpg')
     # image = cv2.imread('image/colorblock02.png')
+    image = cv2.imread('kalman_frame.png')
 
     wb = cv2.xphoto.createSimpleWB()
     image = wb.balanceWhite(image)

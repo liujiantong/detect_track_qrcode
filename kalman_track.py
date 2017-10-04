@@ -60,11 +60,15 @@ def center(points):
     return np.array([np.float32(cx), np.float32(cy)], np.float32)
 
 
-def show_video(frm):
+def show_video(frm, roi):
     cv2.imshow('frame', frm)
     k = cv2.waitKey(10) & 0xFF
     if k == 27 or k == ord('q'):
         return True
+    elif k == ord('s'):
+        cv2.imwrite('kalman_frame.png', frm)
+        cv2.imwrite('kalman_roi.png', roi)
+    return False
 
 
 if __name__ == '__main__':
@@ -92,34 +96,36 @@ if __name__ == '__main__':
             x0, y0, w, h = united_rect
             cv2.rectangle(frame, (x0, y0), (x0 + w, y0 + h), (0, 255, 0), 2)
 
-            rx, ry, rw, rh = united_rect
-            roi_image = frame[rx:rx+rw, ry:ry+rh]
+            # FIXME: united_rect is empty
+            # rx, ry, rw, rh = united_rect
+            roi_image = frame[y0:y0+h, x0:x0+w]
             if roi_image.size == 0:
-                if show_video(frame):
+                if show_video(frame, roi_image):
                     break
                 continue
 
-            roi_image = wb.balanceWhite(roi_image)
+            # roi_image = wb.balanceWhite(roi_image)
             roi_gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
 
             founds = detector.find_contours(roi_gray)
             if not founds:
-                if show_video(frame):
+                if show_video(frame, roi_image):
                     break
                 continue
 
+            roi_image = wb.balanceWhite(roi_image)
             colors, cnt = detector.detect_color_from_contours(roi_image, founds)
             # print 'colors:', colors, 'cnt:', cnt, 'type(cnt):', type(cnt)
             if cnt is not None:
                 print 'colors:', colors
-                cnt = cnt + np.array([rx, ry])
+                cnt = cnt + np.array([x0, y0])
                 cv2.drawContours(frame, [cnt], 0, (0, 0, 255), 2)
                 kalman.correct(center(cnt))
                 prediction = kalman.predict()
                 (px, py), p_radius = cv2.minEnclosingCircle(cnt)
                 cv2.circle(frame, (prediction[0], prediction[1]), np.int32(p_radius), (255, 0, 0))
 
-            if show_video(frame):
+            if show_video(frame, roi_image):
                 break
 
     cv2.destroyAllWindows()
