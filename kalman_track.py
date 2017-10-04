@@ -4,6 +4,7 @@
 import numpy as np
 import cv2
 
+import imutils
 import shapedetector as detector
 
 
@@ -46,7 +47,7 @@ def compute_bound_rect(fgbg, frame, max_x, max_y):
     boxes = [cv2.boundingRect(c) for c in contours if cv2.contourArea(c) > 100]
     if not boxes:
         return None
-    
+
     x, y, w, h = union_rects(boxes)
     w = w if x+w < max_x else max_x-x
     h = h if y+h < max_y else max_y-y
@@ -70,11 +71,14 @@ if __name__ == '__main__':
 
     cap = cv2.VideoCapture(0)
     width, height = cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    # frame_size = get_frame_size(width, height)
+    frame_size = get_frame_size(width, height)
 
     while True:
         _, frame = cap.read()
-        # FIXME: united_rect out of range
+        frame = cv2.resize(frame, frame_size, interpolation=cv2.INTER_AREA)
+        frame = cv2.flip(frame, flipCode=1)
+
+        # united_rect out of range
         united_rect = compute_bound_rect(fgbg, frame, width, height)
         if united_rect is not None:
             # print 'united_rect:', united_rect
@@ -82,26 +86,29 @@ if __name__ == '__main__':
             cv2.rectangle(frame, (x0, y0), (x0 + w, y0 + h), (0, 255, 0), 2)
 
             rx, ry, rw, rh = united_rect
-            if rw == 0 or rh == 0:
+            roi_image = frame[rx:rx+rw, ry:ry+rh]
+            if roi_image.size == 0:
+                cv2.imshow('frame', frame)
                 continue
 
-            roi_image = frame[rx:rx+rw, ry:ry+rh]
-            # roi_image = wb.balanceWhite(roi_image)
-
+            roi_image = wb.balanceWhite(roi_image)
             roi_gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
 
             founds = detector.find_contours(roi_gray)
-            if founds:
-                colors, cnt = detector.detect_color_from_contours(roi_image, founds)
-                # print 'colors:', colors, 'cnt:', cnt, 'type(cnt):', type(cnt)
-                if cnt is not None:
-                    print 'colors:', colors
-                    cnt = cnt + np.array([rx, ry])
-                    cv2.drawContours(frame, [cnt], 0, (0, 0, 255), 2)
-                    kalman.correct(center(cnt))
-                    prediction = kalman.predict()
-                    (px, py), p_radius = cv2.minEnclosingCircle(cnt)
-                    cv2.circle(frame, (prediction[0], prediction[1]), np.int32(p_radius), (255, 0, 0))
+            if not founds:
+                cv2.imshow('frame', frame)
+                continue
+
+            colors, cnt = detector.detect_color_from_contours(roi_image, founds)
+            # print 'colors:', colors, 'cnt:', cnt, 'type(cnt):', type(cnt)
+            if cnt is not None:
+                print 'colors:', colors
+                cnt = cnt + np.array([rx, ry])
+                cv2.drawContours(frame, [cnt], 0, (0, 0, 255), 2)
+                kalman.correct(center(cnt))
+                prediction = kalman.predict()
+                (px, py), p_radius = cv2.minEnclosingCircle(cnt)
+                cv2.circle(frame, (prediction[0], prediction[1]), np.int32(p_radius), (255, 0, 0))
 
             cv2.imshow('frame', frame)
             k = cv2.waitKey(10) & 0xFF
