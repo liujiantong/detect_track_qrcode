@@ -19,9 +19,9 @@ def init_kalman():
 
 def get_frame_size(fw, fh, max_width=1024):
     if fw < max_width:
-        return fw, fh
+        return np.int32(fw), np.int32(fh)
     ratio = max_width / float(fw)
-    return max_width, np.int32(ratio * fh)
+    return np.int32(max_width), np.int32(ratio * fh)
 
 
 def union_rects(rects):
@@ -35,8 +35,8 @@ def union_rects(rects):
     return cv2.boundingRect(np.array(pnts))
 
 
-def compute_bound_rect(fgbg, frame, max_x, max_y):
-    fg_mask = fgbg.apply(frame)
+def compute_bound_rect(fg_bg, frm, max_x, max_y):
+    fg_mask = fg_bg.apply(frm)
     fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, kernel)
     fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_CLOSE, kernel)
 
@@ -71,6 +71,10 @@ def show_video(frm, roi=None):
     return False
 
 
+# video_src = 0
+video_src = 'output.avi'
+
+
 if __name__ == '__main__':
     kalman = init_kalman()
     measurement = np.array((2, 1), np.float32)
@@ -80,12 +84,17 @@ if __name__ == '__main__':
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
     wb = cv2.xphoto.createSimpleWB()
 
-    cap = cv2.VideoCapture(0)
+    # cap = cv2.VideoCapture(video_src)
+    cap = cv2.VideoCapture(video_src)
     width0, height0 = cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
     width, height = get_frame_size(width0, height0)
 
     while True:
-        _, frame = cap.read()
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        # if video_src == 0:
         frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_AREA)
         frame = cv2.flip(frame, flipCode=1)
 
