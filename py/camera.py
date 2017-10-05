@@ -47,20 +47,14 @@ class SimpleCamera(object):
             warnings.warn("Camera is not started, you should start it with start_camera()")
             return False, None
 
-    def _read_from_camera(self):
-        """
-        This method is responsible for grabbing frames from the camera
-        """
-        self._ret, self._frame = self._cam.read()
-        return (True, self._frame) if self._ret else (False, None)
-
     def _update_camera(self):
         """
         Grabs the frames from the camera
         """
         while True:
             if self.is_running:
-                self._ret, self._frame = self._read_from_camera()
+                ret, frm = self._cam.read()
+                self._ret, self._frame = (True, frm) if ret else (False, None)
             else:
                 break
 
@@ -84,4 +78,3 @@ class SimpleCamera(object):
     @property
     def is_running(self):
         return not self._stop_event.is_set()
-
