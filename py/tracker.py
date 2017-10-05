@@ -13,17 +13,17 @@ import helper
 
 class ToyTracker(object):
 
-    def __init__(self, camera, max_nb_of_points=None, debug=True):
+    def __init__(self, camera, max_nb_of_centers=None, debug=True):
         """
         :param camera: Camera object which parent is a Camera object (like WebCamera)
-        :param max_nb_of_points: Maxmimum number of points for storing. If it is set
+        :param max_nb_of_centers: Maxmimum number of points for storing. If it is set
         to None than it means there is no limit
         :param debug: When it's true than we can see the visualization of the captured points etc...
         """
         self._camera = camera
-        self._tracker_points = None
+        self._tracker_centers = None
         self._debug = debug
-        self._max_nb_of_points = max_nb_of_points
+        self._max_nb_of_centers = max_nb_of_centers
         self._tracking_callback = None
         self._is_running = False
         self._frame = None
@@ -34,12 +34,12 @@ class ToyTracker(object):
         self._united_fg = None
         self._toy_contour = None
         self._toy_radius = 0
-        self._toy_colors = []
+        self._toy_colors = None
         self._measurement = np.array((2, 1), np.float32)
         self._toy_prediction = np.zeros((2, 1), np.float32)
 
         self._init_tracker()
-        self._create_tracker_points_list()
+        self._create_tracker_center_history()
 
     def _init_tracker(self):
         w, h = self._camera.get_frame_width_and_height()
@@ -54,14 +54,14 @@ class ToyTracker(object):
 
         self._fgbg = cv2.createBackgroundSubtractorMOG2(history=200)
 
-    def _create_tracker_points_list(self):
+    def _create_tracker_center_history(self):
         """
         Initialize the tracker point list
         """
-        if self._max_nb_of_points:
-            self._tracker_points = deque(maxlen=self._max_nb_of_points)
+        if self._max_nb_of_centers:
+            self._tracker_centers = deque(maxlen=self._max_nb_of_centers)
         else:
-            self._tracker_points = deque()
+            self._tracker_centers = deque()
 
     def set_tracking_callback(self, tracking_callback):
         if not isinstance(tracking_callback, FunctionType):
@@ -79,25 +79,21 @@ class ToyTracker(object):
 
     def track(self):
         self._is_running = True
-        wb = cv2.xphoto.createSimpleWB()
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
-        width0, height0 = self._camera.get_frame_width_and_height()
 
         detector = ToyDetector()
+        wb = cv2.xphoto.createSimpleWB()
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
 
         while True:
             self._read_from_camera()
-
-            frame = self._frame.copy()
             self._debug_frame = self._frame.copy()
 
-            united_rect = self._compute_bound_rect(frame, self._frame_width, self._frame_height, kernel)
+            united_rect = self._compute_bound_rect(self._frame, self._frame_width, self._frame_height, kernel)
             if united_rect is not None:
-                # print 'united_rect:', united_rect
-                roi_x, roi_y, roi_w, roi_h = united_rect
-                # cv2.rectangle(frame, (roi_x, roi_y), (roi_x + roi_w, roi_y + roi_h), (0, 255, 0), 2)
+                self._united_fg = united_rect
+                roi_x, roi_y, roi_w, roi_h = self._united_fg
 
-                roi_image = frame[roi_y:roi_y + roi_h, roi_x:roi_x + roi_w]
+                roi_image = self._frame[roi_y:roi_y + roi_h, roi_x:roi_x + roi_w]
 
                 roi_image = wb.balanceWhite(roi_image)
                 roi_gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
@@ -109,11 +105,13 @@ class ToyTracker(object):
                     if cnt is not None:
                         self._toy_colors = colors
                         self._toy_contour = cnt + np.array([roi_x, roi_y])
-                        self._measurement = helper.center(cnt)
+                        self._measurement = helper.center(self._toy_contour)
                         self._kalman.correct(self._measurement)
                         self._toy_prediction = self._kalman.predict()
                         _, self._toy_radius = cv2.minEnclosingCircle(cnt)
                         self._add_new_tracker_point()
+            else:
+                self._clear_debug_things()
 
             if self._debug:
                 self._draw_debug_things(draw_fg=False)
@@ -149,12 +147,12 @@ class ToyTracker(object):
 
     def _add_new_tracker_point(self, min_distance=20, max_distance=np.inf):
         try:
-            dst = helper.calc_distance(self._tracker_points[-1], self._measurement)
+            dst = helper.calc_distance(self._tracker_centers[-1], self._measurement)
             if max_distance > dst > min_distance:
-                self._tracker_points.append(self._measurement)
+                self._tracker_centers.append(self._measurement)
         except IndexError:
             # It happens only when the queue is empty and we need a starting point
-            self._tracker_points.append(self._measurement)
+            self._tracker_centers.append(self._measurement)
 
     def _draw_debug_things(self, draw_fg=True, draw_contour=True, draw_prediction=True):
         if draw_fg and self._united_fg is not None:
@@ -166,6 +164,15 @@ class ToyTracker(object):
             cv2.circle(self._debug_frame, (self._toy_prediction[0], self._toy_prediction[1]),
                        np.int32(self._toy_radius), (255, 0, 0))
 
+    def _clear_debug_things(self):
+        """
+        clear debug image
+        """
+        self._toy_colors = None
+        self._toy_contour = None
+        self._toy_prediction = None
+        self._toy_radius = 0
+
     def stop_tracking(self):
         """
         Stop the color tracking
@@ -173,11 +180,7 @@ class ToyTracker(object):
         self._is_running = False
 
     def get_debug_image(self):
-        if self._debug:
-            return self._debug_frame
-        else:
-            import warnings
-            warnings.warn("Debugging is not enabled so there is no debug frame")
+        return self._debug_frame
 
     def get_frame(self):
         return self._frame
