@@ -76,6 +76,7 @@ class ToyTracker(object):
         else:
             import warnings
             warnings.warn("There is no camera feed! Stop tracking.")
+            self.stop_tracking()
 
     def track(self):
         self._is_running = True

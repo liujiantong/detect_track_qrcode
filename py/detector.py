@@ -15,14 +15,11 @@ red_range2 = (150, 180)
 green_range = (30, 90)
 blue_range = (90, 140)
 
-block_size = 100
-half_block_size = (block_size / 2)
-
 
 class ToyDetector(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, block_size=100):
+        self._block_size = block_size
 
     @staticmethod
     def find_contours(gray):
@@ -85,14 +82,15 @@ class ToyDetector(object):
     def detect_color_in(self, img, cnt):
         x, y, w, h = cv2.boundingRect(cnt)
         cnt = cnt.reshape(-1, 2)
-        square_pnts = np.float32([[0, 0], [block_size, 0], [block_size, block_size]])
+        square_pnts = np.float32([[0, 0], [self._block_size, 0], [self._block_size, self._block_size]])
         mtx = cv2.getAffineTransform(np.float32(cnt[:3]), square_pnts)
         dst = cv2.warpAffine(img, mtx, (w, h))
 
+        half_block_size = self._block_size / 2
         roi1, roi2, roi3, roi4 = dst[0:half_block_size, 0:half_block_size], \
-                                 dst[half_block_size:block_size, 0:half_block_size], \
-                                 dst[half_block_size:block_size, half_block_size:block_size], \
-                                 dst[0:half_block_size, half_block_size:block_size]
+                                 dst[half_block_size:self._block_size, 0:half_block_size], \
+                                 dst[half_block_size:self._block_size, half_block_size:self._block_size], \
+                                 dst[0:half_block_size, half_block_size:self._block_size]
         colours = self.detect_color(roi1), self.detect_color(roi2), \
                   self.detect_color(roi3), self.detect_color(roi4)
         for idx, color in enumerate(colours):
