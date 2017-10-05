@@ -14,8 +14,8 @@ class SimpleCamera(object):
         self._frame_width = None
         self._frame_height = None
         self._ret = False
-        self._is_running = False
         self._video_src = video_src
+        self._stop_event = threading.Event()
 
     def _init_camera(self):
         self._cam = cv2.VideoCapture(self._video_src)
@@ -32,7 +32,7 @@ class SimpleCamera(object):
         Camera runs on a separate thread so we can reach a higher FPS
         """
         self._init_camera()
-        self._is_running = True
+        self._stop_event.clear()
         threading.Thread(target=self._update_camera, args=()).start()
 
     def read(self):
@@ -40,7 +40,7 @@ class SimpleCamera(object):
         With this you can grab the last frame from the camera
         :return (boolean, np.array): return value and frame
         """
-        if self._is_running:
+        if self.is_running:
             return self._ret, self._frame
         else:
             import warnings
@@ -59,7 +59,7 @@ class SimpleCamera(object):
         Grabs the frames from the camera
         """
         while True:
-            if self._is_running:
+            if self.is_running:
                 self._ret, self._frame = self._read_from_camera()
             else:
                 break
@@ -78,8 +78,10 @@ class SimpleCamera(object):
         """
         Stop the camera
         """
-        self._is_running = False
+        self._stop_event.set()
+        # self._cam.release()
 
+    @property
     def is_running(self):
-        return self._is_running
+        return not self._stop_event.is_set()
 

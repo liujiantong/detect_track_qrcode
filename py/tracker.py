@@ -75,7 +75,7 @@ class ToyTracker(object):
             self._frame = cv2.flip(frame, flipCode=1)
         else:
             import warnings
-            warnings.warn("There is no camera feed!")
+            warnings.warn("There is no camera feed! Stop tracking.")
 
     def track(self):
         self._is_running = True
