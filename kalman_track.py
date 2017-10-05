@@ -59,6 +59,11 @@ def center(points):
     return np.array([np.float32(cx), np.float32(cy)], np.float32)
 
 
+def contour_center(contour):
+    M = cv2.moments(contour)
+    return np.array([(M["m10"] / M["m00"]), (M["m01"] / M["m00"])], np.float32)
+
+
 def show_video(frm, roi=None):
     cv2.imshow('frame', frm)
     k = cv2.waitKey(10) & 0xFF
@@ -124,6 +129,7 @@ if __name__ == '__main__':
                 cnt = cnt + np.array([roi_x, roi_y])
                 cv2.drawContours(frame, [cnt], 0, (0, 0, 255), 2)
                 kalman.correct(center(cnt))
+                # kalman.correct(contour_center(cnt))
                 prediction = kalman.predict()
                 (px, py), p_radius = cv2.minEnclosingCircle(cnt)
                 cv2.circle(frame, (prediction[0], prediction[1]), np.int32(p_radius), (255, 0, 0))
