@@ -9,6 +9,11 @@ cv::Size get_frame_size(cv::Size size, unsigned max_width) {
 }
 
 cv::Rect union_rects(std::vector<cv::Rect>& rects) {
+    if (rects.empty()) {
+        cv::Rect r;
+        return r;
+    }
+
     std::vector<cv::Point> pnts;
     for (int i=0; i<rects.size(); i++) {
         pnts.push_back(cv::Point(rects[i].x, rects[i].y));

@@ -11,6 +11,7 @@ public:
 
 private:
     static std::vector<cv::Point> check_cnt_contain(std::vector<std::vector<cv::Point> >& cnts);
+    static std::string detect_color(cv::Mat& roi);
 
     static double angle_cos(cv::Point pt0, cv::Point pt1, cv::Point pt2) {
         double dx1 = pt0.x - pt1.x;

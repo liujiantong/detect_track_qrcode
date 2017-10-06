@@ -3,6 +3,10 @@
 #include <tuple>
 
 
+std::string ToyDetector::detect_color(cv::Mat& roi) {
+
+}
+
 std::vector<cv::Point> ToyDetector::check_cnt_contain(std::vector<std::vector<cv::Point> >& cnts) {
     if (cnts.empty()) {
         std::vector<cv::Point> result;
@@ -22,7 +26,7 @@ std::vector<cv::Point> ToyDetector::check_cnt_contain(std::vector<std::vector<cv
 
     int counter = 0;
     std::vector<std::tuple<double, int> >::iterator pos;
-    for (pos=areas.begin(); pos<areas.end(); ++pos) {
+    for (pos=areas.begin(); pos<areas.end()-1; ++pos) {
         counter++;
         int idx = std::get<1>(*pos);
         std::vector<cv::Point> cnt = cnts[idx];
