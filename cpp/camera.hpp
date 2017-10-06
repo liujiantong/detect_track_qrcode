@@ -2,37 +2,35 @@
 #define __HIVE_CAMERA_HPP__
 
 #include <opencv2/videoio.hpp>
+
+#include <string>
 #include <thread>
+#include <tuple>
 
 
 class SimpleCamera {
 public:
-    // SimpleCamera(unsigned vsrc=cv::CAP_ANY) : _cam(NULL), _ret(false), _video_src(vsrc),
-    // _video_file_src(NULL), _video_type(0), _is_running(false), _worker(NULL) {
-    //
-    // };
-
-    SimpleCamera(std::string& vsrc) : _cam(NULL), _ret(false),
-    _video_src(vsrc), _is_running(false) {
-        // try to open string, this will attempt to open it as a video file or image sequence
-        _cam = new cv::VideoCapture(_video_src);
+    SimpleCamera(std::string& vsrc) : _ret(false), _video_src(vsrc), _is_running(false) {
+        // try to open string as a video file or image sequence
+        _cam.open(_video_src);
 
         // if this fails, try to open as a video camera, through the use of an integer param
-        if (!_cam->isOpened()) {
-            _cam->open(atoi(_video_src.c_str()));
+        if (!_cam.isOpened()) {
+            _cam.open(atoi(_video_src.c_str()));
         }
     };
 
     void start_camera();
-    void release_camera();
+    void release_camera() {
+        _is_running = false;
+    };
 
     cv::Mat* read() {
         return &_frame;
     };
 
-    void get_frame_width_and_height(unsigned* w, unsigned* h) {
-        *w = _frame_width;
-        *h = _frame_height;
+    std::tuple<unsigned, unsigned> get_frame_width_and_height() {
+        return std::make_tuple(_frame_width, _frame_height);
     };
 
     inline double get_fps() {
@@ -48,7 +46,7 @@ private:
     void update_camera();
 
 private:
-    cv::VideoCapture* _cam;
+    cv::VideoCapture _cam;
     cv::Mat _frame;
     double _fps;
     unsigned _frame_width;
