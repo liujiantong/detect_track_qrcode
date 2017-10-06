@@ -131,7 +131,7 @@ class ToyDetector(object):
         return False, None
 
     @staticmethod
-    def _check_cnt_contain(cnts):
+    def _check_cnt_contain_rtree(cnts):
         if not cnts:
             return None
 
@@ -146,4 +146,20 @@ class ToyDetector(object):
 
         areas = [p.area for p in polygons]
         return cnts[np.argmax(areas)]
+
+    @staticmethod
+    def _check_cnt_contain(cnts):
+        if not cnts:
+            return None
+
+        areas = [(cv2.contourArea(c), c) for c in cnts]
+        sorted_cnts = sorted(areas, key=lambda tup: tup[0], reverse=True)
+        for idx, itm in enumerate(sorted_cnts):
+            _, cnt = itm
+            for _, c in sorted_cnts[idx+1:]:
+                flags = [cv2.pointPolygonTest(cnt, (pt[0], pt[1]), measureDist=False) for pt in c]
+                if all(f >= 0 for f in flags):
+                    return cnt
+
+        return sorted_cnts[0][1]
 
