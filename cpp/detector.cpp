@@ -4,10 +4,10 @@
 #include <tuple>
 
 
-const int RED_RANGE1[]  = {0, 30};
-const int RED_RANGE2[]  = {150, 180};
-const int GREEN_RANGE[] = {30, 90};
-const int BLUE_RANGE[]  = {90, 140};
+const cv::Range RED_RANGE1(10, 30);
+const cv::Range RED_RANGE2(150, 180);
+const cv::Range GREEN_RANGE(30, 90);
+const cv::Range BLUE_RANGE(90, 140);
 
 
 std::string ToyDetector::detect_color(cv::Mat& roi) {
@@ -38,10 +38,9 @@ std::string ToyDetector::detect_color(cv::Mat& roi) {
     cv::calcHist(&hue, 1, 0, cv::Mat(), hist, 1, &hsize, &ranges);
     cv::normalize(hist, hist, 0, 255, cv::NORM_MINMAX, -1, cv::Mat());
 
-    double rval = sum_histogram(hist, RED_RANGE1[0], RED_RANGE1[1]) + \
-                  sum_histogram(hist, RED_RANGE2[0], RED_RANGE2[1]);
-    double gval = sum_histogram(hist, GREEN_RANGE[0], GREEN_RANGE[1]);
-    double bval = sum_histogram(hist, BLUE_RANGE[0], BLUE_RANGE[1]);
+    double rval = sum_histogram(hist, RED_RANGE1) + sum_histogram(hist, RED_RANGE2);
+    double gval = sum_histogram(hist, GREEN_RANGE);
+    double bval = sum_histogram(hist, BLUE_RANGE);
 
     if (rval > 0.8) {
         return "red";

@@ -39,9 +39,9 @@ double calc_distance(const cv::Point pt1, const cv::Point pt2) {
     return std::sqrt(std::pow((pt1.x - pt2.x), 2) + std::pow((pt1.y - pt2.y), 2));
 }
 
-double sum_histogram(cv::Mat& hist, int low, int high) {
+double sum_histogram(cv::Mat& hist, const cv::Range& range) {
     double sum = 0;
-    for (int i=low; i<high; i++) {
+    for (int i=range.start; i<range.end; i++) {
         sum += cvRound(hist.at<float>(i));
     }
     return sum;

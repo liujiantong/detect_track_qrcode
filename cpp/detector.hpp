@@ -4,6 +4,7 @@
 #include <string>
 #include <opencv2/opencv.hpp>
 
+
 class ToyDetector {
 public:
     ToyDetector(int block_size=100) : block_size(block_size) {

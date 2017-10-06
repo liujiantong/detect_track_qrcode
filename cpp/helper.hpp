@@ -10,7 +10,7 @@ cv::Rect union_rects(std::vector<cv::Rect>& rects);
 cv::Point center(std::vector<cv::Point>& points);
 cv::Point contour_center(std::vector<cv::Point> contour, bool bin_img=true);
 double calc_distance(const cv::Point pt1, const cv::Point pt2);
-double sum_histogram(cv::Mat& hist, int low, int high);
+double sum_histogram(cv::Mat& hist, const cv::Range& range);
 
 
 #endif // __HIVE_HELPER_HPP__
