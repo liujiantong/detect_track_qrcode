@@ -51,7 +51,7 @@ class ToyDetector(object):
         return found_cnts
 
     @staticmethod
-    def detect_color(roi):
+    def _detect_color(roi):
         hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
         mask = cv2.inRange(hsv, (0., 20., 0.), (180., 255., 255.))
@@ -91,8 +91,8 @@ class ToyDetector(object):
                                  dst[half_block_size:self._block_size, 0:half_block_size], \
                                  dst[half_block_size:self._block_size, half_block_size:self._block_size], \
                                  dst[0:half_block_size, half_block_size:self._block_size]
-        colours = self.detect_color(roi1), self.detect_color(roi2), \
-                  self.detect_color(roi3), self.detect_color(roi4)
+        colours = self._detect_color(roi1), self._detect_color(roi2), \
+                  self._detect_color(roi3), self._detect_color(roi4)
         for idx, color in enumerate(colours):
             if color == 'white':
                 colours = colours[idx:] + colours[:idx]
@@ -108,12 +108,12 @@ class ToyDetector(object):
         if not square_cnts:
             return [], None
 
-        bound_cnt = self.check_cnt_contain(square_cnts)
+        bound_cnt = self._check_cnt_contain(square_cnts)
         colors, dst = self.detect_color_in(img, bound_cnt)
         return colors, bound_cnt
 
     @staticmethod
-    def angle_cos(p0, p1, p2):
+    def _angle_cos(p0, p1, p2):
         d1, d2 = (p0 - p1).astype('float'), (p2 - p1).astype('float')
         return np.abs(np.dot(d1, d2) / np.sqrt(np.dot(d1, d1) * np.dot(d2, d2)))
 
@@ -123,7 +123,7 @@ class ToyDetector(object):
         if len(cnt) == 4 and cv2.isContourConvex(cnt):
             cnt = cnt.reshape(-1, 2)
             ws = [distance.euclidean(cnt[i], cnt[(i + 1) % 4]) for i in xrange(4)]
-            max_cos = np.max([self.angle_cos(cnt[i], cnt[(i + 1) % 4], cnt[(i + 2) % 4]) for i in xrange(4)])
+            max_cos = np.max([self._angle_cos(cnt[i], cnt[(i + 1) % 4], cnt[(i + 2) % 4]) for i in xrange(4)])
             z_val = np.std(ws) / np.mean(ws)
             # print 'z_val:%s, max_cos:%s' % (z_val, max_cos)
             if z_val < 0.18 and max_cos < 0.35:
@@ -131,7 +131,7 @@ class ToyDetector(object):
         return False, None
 
     @staticmethod
-    def check_cnt_contain(cnts):
+    def _check_cnt_contain(cnts):
         if not cnts:
             return None
 

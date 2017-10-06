@@ -5,7 +5,7 @@
 
 #include <string>
 #include <thread>
-#include <tuple>
+// #include <tuple>
 
 
 class SimpleCamera {
@@ -29,8 +29,8 @@ public:
         return &_frame;
     };
 
-    std::tuple<unsigned, unsigned> get_frame_width_and_height() {
-        return std::make_tuple(_frame_width, _frame_height);
+    cv::Size get_frame_width_and_height() {
+        return cv::Size(_frame_width, _frame_height);
     };
 
     inline double get_fps() {
