@@ -1,4 +1,6 @@
 #include "helper.hpp"
+#include <opencv2/imgproc.hpp>
+
 
 cv::Size get_frame_size(cv::Size size, unsigned max_width) {
     if (size.width < max_width) {
@@ -10,7 +12,7 @@ cv::Size get_frame_size(cv::Size size, unsigned max_width) {
 
 cv::Rect union_rects(std::vector<cv::Rect>& rects) {
     if (rects.empty()) {
-        cv::Rect r;
+        cv::Rect r = cv::Rect();
         return r;
     }
 
@@ -35,4 +37,12 @@ cv::Point contour_center(std::vector<cv::Point> contour, bool bin_img) {
 
 double calc_distance(const cv::Point pt1, const cv::Point pt2) {
     return std::sqrt(std::pow((pt1.x - pt2.x), 2) + std::pow((pt1.y - pt2.y), 2));
+}
+
+double sum_histogram(cv::Mat& hist, int low, int high) {
+    double sum = 0;
+    for (int i=low; i<high; i++) {
+        sum += cvRound(hist.at<float>(i));
+    }
+    return sum;
 }
