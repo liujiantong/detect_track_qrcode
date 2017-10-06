@@ -1,34 +1,48 @@
 #include "detector.hpp"
 
-#include "RTree.hpp"
-
-
-typedef int ValueType;
-typedef RTree<ValueType, int, 2, float> STRtree;
+#include <tuple>
 
 
 std::vector<cv::Point> ToyDetector::check_cnt_contain(std::vector<std::vector<cv::Point> >& cnts) {
-    // if not cnts:
-    //     return None
-    //
-    // polygons = [Polygon(np.int32(r)) for r in cnts]
-    // tree = STRtree(polygons)
-    //
-    // for cnt in cnts:
-    //     query_rect = Polygon(np.int32(cnt)).buffer(1.0)
-    //     result = tree.query(query_rect)
-    //     if len(result) == len(polygons):
-    //         return cnt
-    //
-    // areas = [p.area for p in polygons]
-    // return cnts[np.argmax(areas)]
-
-    std::vector<cv::Point> result;
-    STRtree tree;
-
-    for (int i=0; i<cnts.size(); i++) {
-        // tree.Insert(rects[i].min, rects[i].max, i);
+    if (cnts.empty()) {
+        std::vector<cv::Point> result;
+        return result;
     }
 
-    return result;
+    std::vector<std::tuple<double, int> > areas;
+    for (int i=0; i<cnts.size(); i++) {
+        double area = cv::contourArea(cnts[i]);
+        areas.push_back(std::make_tuple(area, i));
+    }
+
+    std::sort(areas.begin(), areas.end(),
+    [](const std::tuple<double, int>& a, const std::tuple<double, int>& b) -> bool {
+        return std::get<0>(a) > std::get<0>(b);
+    });
+
+    int counter = 0;
+    std::vector<std::tuple<double, int> >::iterator pos;
+    for (pos=areas.begin(); pos<areas.end(); ++pos) {
+        counter++;
+        int idx = std::get<1>(*pos);
+        std::vector<cv::Point> cnt = cnts[idx];
+
+        std::vector<double> flags;
+        std::vector<std::tuple<double, int> >::iterator pos1;
+        for (pos1=pos+counter; pos1<areas.end(); ++pos1) {
+            int idx1 = std::get<1>(*pos1);
+            std::vector<cv::Point> cnt1 = cnts[idx1];
+            for (cv::Point& pt : cnt1) {
+                double flag = cv::pointPolygonTest(cnt, pt, false);
+                flags.push_back(flag);
+            }
+        }
+
+        if (std::all_of(flags.begin(), flags.end(), [](double f) -> bool {return f >= 0;})) {
+            return cnt;
+        }
+    }
+
+    int idx = std::get<1>(areas[0]);
+    return cnts[idx];
 }
