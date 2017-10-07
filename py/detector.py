@@ -24,7 +24,7 @@ class ToyDetector(object):
 
     @staticmethod
     def find_contours(gray):
-        blurred = cv2.medianBlur(gray, 5)
+        blurred = cv2.medianBlur(gray, 3)
         edges = cv2.Canny(blurred, 100, 120)
 
         found_cnts = []
@@ -158,3 +158,4 @@ class ToyDetector(object):
                     return cnt
 
         return sorted_cnts[0][1]
+

@@ -10,6 +10,40 @@ const cv::Range GREEN_RANGE(30, 90);
 const cv::Range BLUE_RANGE(90, 140);
 
 
+std::vector<std::vector<cv::Point> > ToyDetector::find_contours(cv::Mat& gray) {
+    cv::Mat blurred, edges;
+    cv::medianBlur(gray, blurred, 3);
+    cv::Canny(blurred, edges, 100, 120);
+
+    std::vector<cv::Vec4i> hierarchy;
+    std::vector<std::vector<cv::Point> > contours, found_cnts;
+    cv::findContours(edges, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+
+    if (hierarchy.empty()) {
+        return found_cnts;
+    }
+
+    cv::Vec4i hierarchy0 = hierarchy[0];
+    for (int cnt_idx=0; cnt_idx<contours.size(); cnt_idx++) {
+        double area = cv::contourArea(contours[cnt_idx], true);
+        if (area < 100) {
+            continue;
+        }
+
+        int k = cnt_idx, c = 0;
+        while (hierarchy0[k][2] != -1) {
+            k = hierarchy0[k][2];
+            c++;
+        }
+        if (c > 0) {
+            found_cnts.push_back(contours[cnt_idx]);
+        }
+    }
+
+    return found_cnts;
+}
+
+
 std::tuple<bool, std::vector<cv::Point> > ToyDetector::detect_square(std::vector<cv::Point>& cnt) {
     double peri = cv::arcLength(cnt, true);
     std::vector<cv::Point> approx;
