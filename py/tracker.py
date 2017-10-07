@@ -52,7 +52,7 @@ class ToyTracker(object):
         self._kalman.processNoiseCov = np.array([[1, 0, 0, 0], [0, 1, 0, 0],
                                            [0, 0, 1, 0], [0, 0, 0, 1]], np.float32) * 0.03
 
-        self._fgbg = cv2.createBackgroundSubtractorMOG2(history=200)
+        self._fgbg = cv2.createBackgroundSubtractorMOG2(history=300, detectShadows=False)
 
     def _create_tracker_center_history(self):
         """
