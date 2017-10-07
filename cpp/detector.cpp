@@ -133,8 +133,9 @@ std::tuple<bool, std::vector<cv::Point> > ToyDetector::detect_square(std::vector
 
         double max_cos = *std::max_element(coss.begin(), coss.end());
         std::tuple<double, double> mean_std = calc_mean_stdev(distances);
+
         double z_val = std::get<1>(mean_std);
-        if (std::get<0>(mean_std) != 0.0) {
+        if (std::abs(std::get<0>(mean_std) - 0.0) > 0.01) {
             z_val = std::get<1>(mean_std) / std::get<0>(mean_std);
         }
 
