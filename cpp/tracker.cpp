@@ -44,3 +44,26 @@ void ToyTracker::init_tracker() {
 
     _fgbg = cv::createBackgroundSubtractorMOG2(300, 16, false);
 }
+
+
+void ToyTracker::read_from_camera() {
+    cv::Mat frame;
+    cv::Mat* p_frame = _camera->read();
+    cv::resize(*p_frame, frame, _frame_size, cv::INTER_AREA);
+    cv::flip(frame, _frame, 1);
+}
+
+
+void ToyTracker::add_new_tracker_point(cv::Point pnt, int min_distance, int max_distance) {
+    if (_tracker_centers.empty()) {
+        _tracker_centers.push_back(pnt);
+    } else {
+        double dst = calc_distance(pnt, _tracker_centers.back());
+        if (dst > min_distance && dst < max_distance) {
+            if (_tracker_centers.size() > _max_nb_of_centers) {
+                _tracker_centers.pop_front();
+            }
+            _tracker_centers.push_back(pnt);
+        }
+    }
+}
