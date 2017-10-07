@@ -1,13 +1,43 @@
 #include "detector.hpp"
 #include "helper.hpp"
 
-#include <tuple>
+#include <algorithm>
 
 
 const cv::Range RED_RANGE1(10, 30);
 const cv::Range RED_RANGE2(150, 180);
 const cv::Range GREEN_RANGE(30, 90);
 const cv::Range BLUE_RANGE(90, 140);
+
+
+std::tuple<bool, std::vector<cv::Point> > ToyDetector::detect_square(std::vector<cv::Point>& cnt) {
+    double peri = cv::arcLength(cnt, true);
+    std::vector<cv::Point> approx;
+    cv::approxPolyDP(cnt, approx, peri*0.02, true);
+
+    if (approx.size() == 4 && cv::isContourConvex(approx)) {
+        std::vector<double> coss;
+        std::vector<double> distances;
+
+        for (int i=0; i<4; i++) {
+            coss.push_back( angle_cos(approx[i], approx[(i+1) % 4], approx[(i+2) % 4]) );
+            distances.push_back(calc_distance(approx[i], approx[(i+1) % 4]));
+        }
+
+        double max_cos = *std::max_element(coss.begin(), coss.end());
+        std::tuple<double, double> mean_std = calc_mean_stdev(distances);
+        double z_val = std::get<1>(mean_std);
+        if (std::get<0>(mean_std) != 0.0) {
+            z_val = std::get<1>(mean_std) / std::get<0>(mean_std);
+        }
+
+        if (z_val < 0.18 && max_cos < 0.35) {
+            return std::make_tuple(true, approx);
+        }
+    }
+
+    return std::make_tuple(false, approx);
+}
 
 
 std::string ToyDetector::detect_color(cv::Mat& roi) {

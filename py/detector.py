@@ -6,8 +6,9 @@ import numpy as np
 
 from shapely.geometry import Polygon
 from shapely.strtree import STRtree
-
 from scipy.spatial import distance
+
+import helper
 
 
 red_range1 = (0, 30)
@@ -112,18 +113,13 @@ class ToyDetector(object):
         colors, dst = self.detect_color_in(img, bound_cnt)
         return colors, bound_cnt
 
-    @staticmethod
-    def _angle_cos(p0, p1, p2):
-        d1, d2 = (p0 - p1).astype('float'), (p2 - p1).astype('float')
-        return np.abs(np.dot(d1, d2) / np.sqrt(np.dot(d1, d1) * np.dot(d2, d2)))
-
     def detect_square(self, cnt):
         peri = cv2.arcLength(cnt, True)
         cnt = cv2.approxPolyDP(cnt, 0.02 * peri, True)
         if len(cnt) == 4 and cv2.isContourConvex(cnt):
             cnt = cnt.reshape(-1, 2)
             ws = [distance.euclidean(cnt[i], cnt[(i + 1) % 4]) for i in xrange(4)]
-            max_cos = np.max([self._angle_cos(cnt[i], cnt[(i + 1) % 4], cnt[(i + 2) % 4]) for i in xrange(4)])
+            max_cos = np.max([helper.angle_cos(cnt[i], cnt[(i + 1) % 4], cnt[(i + 2) % 4]) for i in xrange(4)])
             z_val = np.std(ws) / np.mean(ws)
             # print 'z_val:%s, max_cos:%s' % (z_val, max_cos)
             if z_val < 0.18 and max_cos < 0.35:
@@ -162,4 +158,3 @@ class ToyDetector(object):
                     return cnt
 
         return sorted_cnts[0][1]
-

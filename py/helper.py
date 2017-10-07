@@ -44,3 +44,8 @@ def calc_distance(pt1, pt2):
     x2, y2 = pt2
     return np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
+
+def angle_cos(p0, p1, p2):
+    d1, d2 = (p0 - p1).astype('float'), (p2 - p1).astype('float')
+    return np.abs(np.dot(d1, d2) / np.sqrt(np.dot(d1, d1) * np.dot(d2, d2)))
+
