@@ -54,6 +54,42 @@ void ToyTracker::read_from_camera() {
 }
 
 
+cv::Rect ToyTracker::compute_bound_rect(cv::Mat& frm, int max_x, int max_y, cv::Mat& kernel) {
+    cv::Mat fg_mask;
+    _fgbg->apply(frm, fg_mask);
+    
+    cv::morphologyEx(fg_mask, fg_mask, cv::MORPH_OPEN, kernel);
+    cv::morphologyEx(fg_mask, fg_mask, cv::MORPH_CLOSE, kernel);
+    cv::threshold(fg_mask, fg_mask, 60, 255, cv::THRESH_BINARY);
+
+    std::vector<cv::Vec4i> hierarchy;
+    std::vector<std::vector<cv::Point> > contours;
+    cv::findContours(fg_mask, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+    std::vector<cv::Rect> boxes;
+    for (std::vector<cv::Point> c : contours) {
+        if (cv::contourArea(c) > 100) {
+            boxes.push_back(cv::boundingRect(c));
+        }
+    }
+
+    if (boxes.empty()) {
+        return cv::Rect(0, 0, -1, -1);
+    }
+
+    cv::Rect r = union_rects(boxes);
+    int w = r.width;
+    if (r.x + w > max_x) {
+        w = max_x - r.x;
+    }
+    int h = r.height;
+    if (r.y + h > max_y) {
+        h = max_y - r.y;
+    }
+
+    return cv::Rect(r.x, r.y, w, h);
+}
+
 void ToyTracker::add_new_tracker_point(cv::Point pnt, int min_distance, int max_distance) {
     if (_tracker_centers.empty()) {
         _tracker_centers.push_back(pnt);

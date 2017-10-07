@@ -40,8 +40,10 @@ private:
     cv::Ptr<cv::BackgroundSubtractorMOG2> _fgbg;
 
     void init_tracker();
-    void add_new_tracker_point(cv::Point pnt, int min_distance=20, int max_distance=1000);
     void read_from_camera();
+
+    void add_new_tracker_point(cv::Point pnt, int min_distance=20, int max_distance=1000);
+    cv::Rect compute_bound_rect(cv::Mat& frm, int max_x, int max_y, cv::Mat& kernel);
 
     void clear_debug_things() {
         _toy_colors.clear();
