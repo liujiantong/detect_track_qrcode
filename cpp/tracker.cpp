@@ -1,5 +1,8 @@
 #include "tracker.hpp"
+#include "detector.hpp"
 #include "helper.hpp"
+
+#include <opencv2/xphoto/white_balance.hpp>
 
 
 void ToyTracker::init_tracker() {
@@ -46,6 +49,33 @@ void ToyTracker::init_tracker() {
 }
 
 
+void ToyTracker::track() {
+    _is_running = true;
+
+    ToyDetector detector;
+    cv::Ptr<cv::xphoto::SimpleWB> wb = cv::xphoto::createSimpleWB();
+    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(9, 9));
+
+    while (true) {
+        // TODO:
+
+        if (!_is_running) {
+            break;
+        }
+    }
+
+
+    // TODO:
+    // self._is_running = True
+    //
+    // detector = ToyDetector()
+    // wb = cv2.xphoto.createSimpleWB()
+    // kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
+    //
+    // while True:
+}
+
+
 void ToyTracker::read_from_camera() {
     cv::Mat frame;
     cv::Mat* p_frame = _camera->read();
@@ -57,7 +87,7 @@ void ToyTracker::read_from_camera() {
 cv::Rect ToyTracker::compute_bound_rect(cv::Mat& frm, int max_x, int max_y, cv::Mat& kernel) {
     cv::Mat fg_mask;
     _fgbg->apply(frm, fg_mask);
-    
+
     cv::morphologyEx(fg_mask, fg_mask, cv::MORPH_OPEN, kernel);
     cv::morphologyEx(fg_mask, fg_mask, cv::MORPH_CLOSE, kernel);
     cv::threshold(fg_mask, fg_mask, 60, 255, cv::THRESH_BINARY);

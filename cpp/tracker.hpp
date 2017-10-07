@@ -18,6 +18,8 @@ public:
     _max_nb_of_centers(nb_of_cntr), _debug(debug) {
     };
 
+    void track();
+
 private:
     SimpleCamera* _camera;
     std::deque<cv::Point> _tracker_centers;
