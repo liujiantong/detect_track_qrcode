@@ -49,6 +49,27 @@ std::vector<std::string> ToyDetector::detect_color_from_contours(cv::Mat& img,
     std::vector<std::vector<cv::Point> >& cnts,
     std::vector<cv::Point>& out_cnt) {
 
+    std::vector<std::vector<cv::Point>> square_cnts;
+    for (auto cnt0 : cnts) {
+        std::tuple<bool, std::vector<cv::Point> > result = detect_square(cnt0);
+        if (std::get<0>(result)) {
+            square_cnts.push_back(std::get<1>(result));
+        }
+    }
+
+    if (square_cnts.empty()) {
+        std::vector<std::string> colors;
+        return colors;
+    }
+
+    std::vector<cv::Point> bound_cnt = check_cnt_contain(square_cnts);
+    std::tuple<std::vector<std::string>, cv::Mat> tup = detect_color_in(img, bound_cnt);
+
+    std::vector<std::string> colors = std::get<0>(tup);
+    // fill out_cnt
+    out_cnt.assign(bound_cnt.begin(), bound_cnt.end());
+
+    return colors;
 }
 
 
