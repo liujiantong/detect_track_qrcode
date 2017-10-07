@@ -1,6 +1,7 @@
 #include "detector.hpp"
 #include "helper.hpp"
 
+#include <vector>
 #include <algorithm>
 
 
@@ -23,7 +24,7 @@ std::vector<std::vector<cv::Point> > ToyDetector::find_contours(cv::Mat& gray) {
         return found_cnts;
     }
 
-    cv::Vec4i hierarchy0 = hierarchy[0];
+    // cv::Vec4i hierarchy0 = hierarchy[0];
     for (int cnt_idx=0; cnt_idx<contours.size(); cnt_idx++) {
         double area = cv::contourArea(contours[cnt_idx], true);
         if (area < 100) {
@@ -31,8 +32,8 @@ std::vector<std::vector<cv::Point> > ToyDetector::find_contours(cv::Mat& gray) {
         }
 
         int k = cnt_idx, c = 0;
-        while (hierarchy0[k][2] != -1) {
-            k = hierarchy0[k][2];
+        while (hierarchy[k][2] != -1) {
+            k = hierarchy[k][2];
             c++;
         }
         if (c > 0) {
@@ -41,6 +42,57 @@ std::vector<std::vector<cv::Point> > ToyDetector::find_contours(cv::Mat& gray) {
     }
 
     return found_cnts;
+}
+
+
+std::vector<std::string> ToyDetector::detect_color_from_contours(cv::Mat& img,
+    std::vector<std::vector<cv::Point> >& cnts,
+    std::vector<cv::Point>& out_cnt) {
+
+}
+
+
+std::tuple<std::vector<std::string>, cv::Mat> ToyDetector::detect_color_in(
+    cv::Mat& img, std::vector<cv::Point>& cnt) {
+    cv::Mat dst;
+    std::vector<std::string> colors;
+
+    cv::Point2f src_pnts[3], square_pnts[3];
+
+    src_pnts[0] = cv::Point2f(cnt[0]);
+    src_pnts[1] = cv::Point2f(cnt[1]);
+    src_pnts[2] = cv::Point2f(cnt[2]);
+    square_pnts[0] = cv::Point2f(0.0f, 0.0f );
+    square_pnts[1] = cv::Point2f(_block_size, 0.0f );
+    square_pnts[2] = cv::Point2f(_block_size, _block_size);
+
+    cv::Rect r = cv::boundingRect(cnt);
+    cv::Mat mtx = cv::getAffineTransform(src_pnts, square_pnts);
+    cv::warpAffine(img, mtx, dst, cv::Size(r.width, r.height));
+    int half_block_size = _block_size / 2;
+
+    cv::Mat roi1 = dst(cv::Rect(0, 0, half_block_size, half_block_size));
+    cv::Mat roi2 = dst(cv::Rect(half_block_size, 0, half_block_size, half_block_size));
+    cv::Mat roi3 = dst(cv::Rect(half_block_size, half_block_size, half_block_size, half_block_size));
+    cv::Mat roi4 = dst(cv::Rect(0, half_block_size, half_block_size, half_block_size));
+
+    colors.push_back(detect_color(roi1));
+    colors.push_back(detect_color(roi2));
+    colors.push_back(detect_color(roi3));
+    colors.push_back(detect_color(roi4));
+
+    int color_idx = -1;
+    for (int i=0; i<colors.size(); i++) {
+        if (colors[i] == "white") {
+            color_idx = i;
+            break;
+        }
+    }
+
+    if (color_idx != -1) {
+        std::rotate(colors.begin(), colors.begin() + color_idx, colors.end());
+    }
+    return std::make_tuple(colors, dst);
 }
 
 

@@ -86,6 +86,7 @@ class ToyDetector(object):
         square_pnts = np.float32([[0, 0], [self._block_size, 0], [self._block_size, self._block_size]])
         mtx = cv2.getAffineTransform(np.float32(cnt[:3]), square_pnts)
         dst = cv2.warpAffine(img, mtx, (w, h))
+        # dst = cv2.warpAffine(img, mtx, (self._block_size, self._block_size))
 
         half_block_size = self._block_size / 2
         roi1, roi2, roi3, roi4 = dst[0:half_block_size, 0:half_block_size], \
@@ -101,7 +102,7 @@ class ToyDetector(object):
 
     def detect_color_from_contours(self, img, cnts):
         square_cnts = []
-        for i, cnt0 in enumerate(cnts):
+        for cnt0 in cnts:
             is_square, c = self.detect_square(cnt0)
             if is_square:
                 square_cnts.append(c)
@@ -158,4 +159,3 @@ class ToyDetector(object):
                     return cnt
 
         return sorted_cnts[0][1]
-
