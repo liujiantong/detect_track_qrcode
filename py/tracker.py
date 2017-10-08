@@ -95,7 +95,6 @@ class ToyTracker(object):
                 roi_x, roi_y, roi_w, roi_h = self._united_fg
 
                 roi_image = self._frame[roi_y:roi_y + roi_h, roi_x:roi_x + roi_w]
-                # roi_image = wb.balanceWhite(roi_image)
                 roi_gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
 
                 founds = detector.find_contours(roi_gray)
