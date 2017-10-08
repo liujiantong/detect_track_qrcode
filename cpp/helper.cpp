@@ -26,7 +26,7 @@ cv::Rect union_rects(std::vector<cv::Rect>& rects) {
     return cv::boundingRect(pnts);
 }
 
-cv::Point center(std::vector<cv::Point>& points) {
+cv::Point pnts_center(std::vector<cv::Point>& points) {
     double cx = (points[0].x + points[1].x + points[2].x + points[3].x) / 4.0;
     double cy = (points[0].y + points[1].y + points[2].y + points[3].y) / 4.0;
     return cv::Point(cx, cy);

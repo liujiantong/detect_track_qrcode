@@ -16,6 +16,8 @@ class ToyTracker {
 public:
     ToyTracker(SimpleCamera* cam, int nb_of_cntr=30, bool debug=false) : _camera(cam),
     _max_nb_of_centers(nb_of_cntr), _debug(debug) {
+        _tracking_cb = NULL;
+        _united_fg = cv::Rect(0, 0, -1, -1);
     };
 
     void track();
@@ -32,9 +34,9 @@ private:
     bool _debug;
 
     cv::Rect _united_fg;
-    cv::Rect _toy_contour;
+    std::vector<cv::Point> _toy_contour;
     std::vector<std::string> _toy_colors;
-    int _toy_radius;
+    float _toy_radius;
     cv::Mat _measurement;
     cv::Mat _toy_prediction;
 
@@ -46,11 +48,12 @@ private:
 
     void add_new_tracker_point(cv::Point pnt, int min_distance=20, int max_distance=1000);
     cv::Rect compute_bound_rect(cv::Mat& frm, cv::Size max_size, cv::Mat& kernel);
+    void draw_debug_things(bool draw_fg=false, bool draw_contour=true, bool draw_prediction=true);
 
     void clear_debug_things() {
-        _toy_colors.clear();
         _toy_radius = 0;
-        _toy_contour = cv::Rect(0, 0, 0, 0);
+        _toy_colors.clear();
+        _toy_contour.clear();
         _toy_prediction = cv::Mat();
     };
 

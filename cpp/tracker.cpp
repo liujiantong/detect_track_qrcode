@@ -50,6 +50,9 @@ void ToyTracker::init_tracker() {
     _kalman.processNoiseCov.at<double>(2, 2) = cov;
     _kalman.processNoiseCov.at<double>(3, 3) = cov;
 
+    _measurement = cv::Mat(n_measurements, 1, CV_32F);
+    // _toy_prediction = cv::Mat(n_measurements, 1, CV_32F);
+
     _fgbg = cv::createBackgroundSubtractorMOG2(300, 16, false);
 }
 
@@ -80,7 +83,36 @@ void ToyTracker::track() {
                 wb->balanceWhite(roi_image, roi_image);
                 std::vector<cv::Point> cnt;
                 std::vector<std::string> colors = detector.detect_color_from_contours(roi_image, founds, cnt);
+
+                if (!cnt.empty()) {
+                    _toy_contour.clear();
+                    _toy_contour = cnt;
+                    _toy_colors = colors;
+
+                    for (auto p : _toy_contour) {
+                        p += cv::Point(roi_x, roi_y);
+                    }
+
+                    cv::Point cntr = pnts_center(_toy_contour);
+                    _measurement.at<double>(0) = cntr.x;
+                    _measurement.at<double>(1) = cntr.y;
+                    _toy_prediction = _kalman.predict();
+
+                    cv::Point2f c(cntr.x, cntr.y);
+                    cv::minEnclosingCircle(cnt, c, _toy_radius);
+                    add_new_tracker_point(cntr);
+                }
             }
+        } else {
+            clear_debug_things();
+        }
+
+        if (_debug) {
+            draw_debug_things();
+        }
+
+        if (!_tracking_cb) {
+            _tracking_cb();
         }
 
         if (!_is_running) {
@@ -88,55 +120,8 @@ void ToyTracker::track() {
         }
 
         std::this_thread::yield();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        // std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
-
-
-    /* TODO:
-    while True:
-        self._read_from_camera()
-        self._debug_frame = self._frame.copy()
-
-        united_rect = self._compute_bound_rect(self._frame, self._frame_width, self._frame_height, kernel)
-        if united_rect is not None:
-            self._united_fg = united_rect
-            roi_x, roi_y, roi_w, roi_h = self._united_fg
-
-            roi_image = self._frame[roi_y:roi_y + roi_h, roi_x:roi_x + roi_w]
-
-            // roi_image = wb.balanceWhite(roi_image)
-            roi_gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
-
-            founds = detector.find_contours(roi_gray)
-            if founds:
-                roi_image = wb.balanceWhite(roi_image)
-                colors, cnt = detector.detect_color_from_contours(roi_image, founds)
-                if cnt is not None:
-                    self._toy_colors = colors
-                    self._toy_contour = cnt + np.array([roi_x, roi_y])
-                    self._measurement = helper.center(self._toy_contour)
-                    self._kalman.correct(self._measurement)
-                    self._toy_prediction = self._kalman.predict()
-                    _, self._toy_radius = cv2.minEnclosingCircle(cnt)
-                    self._add_new_tracker_point()
-        else:
-            self._clear_debug_things()
-
-        if self._debug:
-            self._draw_debug_things(draw_fg=False)
-
-        if self._tracking_callback is not None:
-            try:
-                self._tracking_callback()
-            except TypeError:
-                import warnings
-                warnings.warn(
-                    "Tracker callback function is not working because of wrong arguments! "
-                    "It takes zero arguments")
-
-        if not self._is_running:
-            break
-    */
 }
 
 
@@ -145,6 +130,24 @@ void ToyTracker::read_from_camera() {
     cv::Mat* p_frame = _camera->read();
     cv::resize(*p_frame, frame, _frame_size, cv::INTER_AREA);
     cv::flip(frame, _frame, 1);
+}
+
+
+void ToyTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_prediction) {
+    if (draw_fg && _united_fg.width > 0) {
+        cv::rectangle(_debug_frame, _united_fg, cv::Scalar(0, 255, 0), 2);
+    }
+
+    if (draw_contour && !_toy_contour.empty()) {
+        std::vector<std::vector<cv::Point> > cnts0;
+        cnts0.push_back(_toy_contour);
+        cv::drawContours(_debug_frame, cnts0, 0, cv::Scalar(0, 0, 255), 2);
+    }
+
+    if (draw_prediction && _toy_radius > 0) {
+        cv::Point c(_toy_prediction.at<float>(0), _toy_prediction.at<float>(0));
+        cv::circle(_debug_frame, c, _toy_radius, cv::Scalar(255, 0, 0), 2);
+    }
 }
 
 
