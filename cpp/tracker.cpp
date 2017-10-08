@@ -72,7 +72,7 @@ void ToyTracker::track() {
         if (united_rect.width > 0) {
             _united_fg = united_rect;
             int roi_x = _united_fg.x, roi_y = _united_fg.y;
-            int roi_w = _united_fg.width, roi_h = _united_fg.height;
+            // int roi_w = _united_fg.width, roi_h = _united_fg.height;
 
             cv::Mat roi_gray;
             cv::Mat roi_image = _frame(_united_fg);
@@ -112,7 +112,7 @@ void ToyTracker::track() {
         }
 
         if (!_tracking_cb) {
-            _tracking_cb();
+            _tracking_cb(this);
         }
 
         if (!_is_running) {
@@ -139,8 +139,7 @@ void ToyTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_pr
     }
 
     if (draw_contour && !_toy_contour.empty()) {
-        std::vector<std::vector<cv::Point> > cnts0;
-        cnts0.push_back(_toy_contour);
+        std::vector<std::vector<cv::Point> > cnts0 = {_toy_contour};
         cv::drawContours(_debug_frame, cnts0, 0, cv::Scalar(0, 0, 255), 2);
     }
 

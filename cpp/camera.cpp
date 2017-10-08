@@ -46,14 +46,11 @@ bool SimpleCamera::init_camera() {
 
 
 void SimpleCamera::update_camera() {
-    while (true) {
-        if (_is_running) {
-            _cam >> _frame;
-            if (_frame.empty()) {
-                _ret = false;
-            }
-        } else {
-            break;
+    while (_is_running) {
+        _cam >> _frame;
+        if (_frame.empty()) {
+            _ret = false;
         }
+        std::this_thread::yield();
     }
 } // SimpleCamera::update_camera

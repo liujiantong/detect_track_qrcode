@@ -7,8 +7,9 @@
 
 #include "camera.hpp"
 
+class ToyTracker;
 
-typedef void (*tracking_callback)();
+typedef void (*tracking_callback)(ToyTracker*);
 
 
 class ToyTracker {
@@ -21,6 +22,34 @@ public:
     };
 
     void track();
+
+
+    cv::Mat* get_frame() {
+        return &_frame;
+    };
+
+    cv::Mat* get_debug_frame() {
+        return &_debug_frame;
+    };
+
+    cv::Point get_last_toy_center() {
+        if (_tracker_centers.empty()) {
+            return cv::Point(-1, -1);
+        }
+        return _tracker_centers.back();
+    };
+
+    std::vector<std::string> get_toy_colors() {
+        return _toy_colors;
+    };
+
+    void set_tracking_callback(tracking_callback cb) {
+        _tracking_cb = cb;
+    };
+
+    void stop_tracking() {
+        _is_running = false;
+    };
 
 private:
     SimpleCamera* _camera;
@@ -55,33 +84,6 @@ private:
         _toy_colors.clear();
         _toy_contour.clear();
         _toy_prediction = cv::Mat();
-    };
-
-    void stop_tracking() {
-        _is_running = false;
-    };
-
-    cv::Mat* get_debug_image() {
-        return &_debug_frame;
-    };
-
-    cv::Mat* get_frame() {
-        return &_frame;
-    };
-
-    cv::Point get_last_toy_center() {
-        if (_tracker_centers.empty()) {
-            return cv::Point(-1, -1);
-        }
-        return _tracker_centers.back();
-    };
-
-    std::vector<std::string> get_toy_colors() {
-        return _toy_colors;
-    };
-
-    void set_tracking_callback(tracking_callback cb) {
-        _tracking_cb = cb;
     };
 
 };

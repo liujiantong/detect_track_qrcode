@@ -51,12 +51,9 @@ class SimpleCamera(object):
         """
         Grabs the frames from the camera
         """
-        while True:
-            if self.is_running:
-                ret, frm = self._cam.read()
-                self._ret, self._frame = (True, frm) if ret else (False, None)
-            else:
-                break
+        while self.is_running:
+            ret, frm = self._cam.read()
+            self._ret, self._frame = (True, frm) if ret else (False, None)
 
     def get_frame_width_and_height(self):
         """
