@@ -24,14 +24,15 @@ std::string join(std::vector<std::string>& v) {
 
 void tracking_cb(ToyTracker* tracker) {
     auto logger = spd::get("console");
+    logger->debug("############ tracking_cb start");
 
     cv::Mat* debug_frame = tracker->get_debug_frame();
-    cv::Point toy_center = tracker->get_last_toy_center();
+    // cv::Point toy_center = tracker->get_last_toy_center();
     auto colors = tracker->get_toy_colors();
 
     cv::imshow("debug frame", *debug_frame);
 
-    char key = (char) cv::waitKey(10);
+    char key = (char) cv::waitKey(3);
     if (key == 27 || key == 'q' || key == 'Q') {
         tracker->stop_tracking();
     }
@@ -43,6 +44,7 @@ void tracking_cb(ToyTracker* tracker) {
 int main(int argc, char const *argv[]) {
     auto logger = spd::stdout_color_mt("console");
     logger->set_level(spd::level::debug);
+    logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] %v");
 
     std::string video_src = "0";
     SimpleCamera camera(video_src);

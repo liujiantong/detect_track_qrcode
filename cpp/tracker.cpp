@@ -105,8 +105,11 @@ void ToyTracker::track() {
 
             if (!founds.empty()) {
                 wb->balanceWhite(roi_image, roi_image);
+                logger->debug("balanceWhite done");
+
                 std::vector<cv::Point> cnt;
                 std::vector<std::string> colors = detector.detect_color_from_contours(roi_image, founds, cnt);
+                logger->debug("detect_color_from_contours cnt.size:{}", cnt.size());
 
                 if (!cnt.empty()) {
                     _toy_contour.clear();
@@ -116,18 +119,22 @@ void ToyTracker::track() {
                     for (auto p : _toy_contour) {
                         p += cv::Point(roi_x, roi_y);
                     }
+                    logger->debug("roi rect offset done.");
 
                     cv::Point cntr = pnts_center(_toy_contour);
                     _measurement.at<double>(0) = cntr.x;
                     _measurement.at<double>(1) = cntr.y;
                     _toy_prediction = _kalman.predict();
+                    logger->debug("kalman predicted");
 
                     cv::Point2f c(cntr.x, cntr.y);
                     cv::minEnclosingCircle(cnt, c, _toy_radius);
                     add_new_tracker_point(cntr);
+                    logger->debug("add_new_tracker_point, cntr:[{},{}]", cntr.x, cntr.y);
                 }
             }
         } else {
+            logger->debug("begin clear_debug_things");
             clear_debug_things();
         }
 
@@ -135,7 +142,7 @@ void ToyTracker::track() {
             draw_debug_things();
         }
 
-        if (!_tracking_cb) {
+        if (_tracking_cb) {
             _tracking_cb(this);
         }
 
@@ -150,8 +157,9 @@ void ToyTracker::track() {
 
 
 void ToyTracker::read_from_camera() {
+    // FIXME: concurrent frame write here.
     auto logger = spd::get("console");
-    logger->debug("_frame_size w:{}, h:{}", _frame_size.width, _frame_size.height);
+    // logger->debug("_frame_size w:{}, h:{}", _frame_size.width, _frame_size.height);
 
     cv::Mat frame(_frame_size.height, _frame_size.width, CV_32F);
     cv::Mat* p_frame = _camera->read();
@@ -159,10 +167,14 @@ void ToyTracker::read_from_camera() {
 
     cv::resize(*p_frame, frame, _frame_size, cv::INTER_AREA);
     cv::flip(frame, _frame, 1);
+    logger->debug("-----> ToyTracker::read_from_camera done");
 }
 
 
 void ToyTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_prediction) {
+    auto logger = spd::get("console");
+    logger->debug("draw_debug_things");
+
     if (draw_fg && _united_fg.width > 0) {
         cv::rectangle(_debug_frame, _united_fg, cv::Scalar(0, 255, 0), 2);
     }
@@ -179,9 +191,12 @@ void ToyTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_pr
 }
 
 
-cv::Rect ToyTracker::compute_fg_bound_rect(cv::Mat& frm, cv::Size max_size, cv::Mat& kernel) {
+cv::Rect ToyTracker::compute_fg_bound_rect(const cv::Mat& frm, cv::Size max_size, cv::Mat& kernel) {
     auto logger = spd::get("console");
     logger->debug("compute_fg_bound_rect start");
+
+    // cv::Mat frm = frm_img.clone();
+    // logger->debug("frm cloned");
 
     cv::Mat fg_mask;
     _fgbg->apply(frm, fg_mask);

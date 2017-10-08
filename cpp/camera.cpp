@@ -40,7 +40,7 @@ bool SimpleCamera::init_camera() {
     logger->debug("width:{}, height:{}", _frame_size.width, _frame_size.height);
 
     _cam >> _frame;
-    // logger->debug("read to _frame");
+    logger->debug("====> SimpleCamera read to _frame");
 
     if (_frame.empty()) {
         _ret = false;
