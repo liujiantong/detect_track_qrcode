@@ -89,7 +89,7 @@ class ToyTracker(object):
             self._read_from_camera()
             self._debug_frame = self._frame.copy()
 
-            united_rect = self._compute_bound_rect(self._frame, self._frame_width, self._frame_height, kernel)
+            united_rect = self._compute_fg_bound_rect(self._frame, self._frame_width, self._frame_height, kernel)
             if united_rect is not None:
                 self._united_fg = united_rect
                 roi_x, roi_y, roi_w, roi_h = self._united_fg
@@ -127,7 +127,7 @@ class ToyTracker(object):
             if not self._is_running:
                 break
 
-    def _compute_bound_rect(self, frm, max_x, max_y, kernel):
+    def _compute_fg_bound_rect(self, frm, max_x, max_y, kernel):
         fg_mask = self._fgbg.apply(frm)
         fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, kernel)
         fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_CLOSE, kernel)

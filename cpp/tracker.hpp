@@ -19,6 +19,7 @@ public:
     _max_nb_of_centers(nb_of_cntr), _debug(debug) {
         _tracking_cb = NULL;
         _united_fg = cv::Rect(0, 0, -1, -1);
+        init_tracker();
     };
 
     void track();
@@ -76,7 +77,7 @@ private:
     void read_from_camera();
 
     void add_new_tracker_point(cv::Point pnt, int min_distance=20, int max_distance=1000);
-    cv::Rect compute_bound_rect(cv::Mat& frm, cv::Size max_size, cv::Mat& kernel);
+    cv::Rect compute_fg_bound_rect(cv::Mat& frm, cv::Size max_size, cv::Mat& kernel);
     void draw_debug_things(bool draw_fg=false, bool draw_contour=true, bool draw_prediction=true);
 
     void clear_debug_things() {

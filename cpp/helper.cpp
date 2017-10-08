@@ -8,7 +8,7 @@ cv::Size get_frame_size(cv::Size size, unsigned max_width) {
     if (size.width < max_width) {
         return size;
     }
-    double ratio = max_width / size.width;
+    double ratio = double(max_width) / size.width;
     return cv::Size(max_width, (ratio * size.height));
 }
 
