@@ -78,12 +78,16 @@ void ToyTracker::track() {
             std::vector<std::vector<cv::Point> > founds = detector.find_contours(roi_gray);
             if (!founds.empty()) {
                 wb->balanceWhite(roi_image, roi_image);
+                std::vector<cv::Point> cnt;
+                std::vector<std::string> colors = detector.detect_color_from_contours(roi_image, founds, cnt);
             }
         }
 
         if (!_is_running) {
             break;
         }
+
+        std::this_thread::yield();
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
