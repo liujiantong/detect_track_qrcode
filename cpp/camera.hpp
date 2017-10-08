@@ -10,12 +10,11 @@
 class SimpleCamera {
 public:
     SimpleCamera(std::string& vsrc) : _ret(false), _video_src(vsrc), _is_running(false) {
-        // try to open string as a video file or image sequence
-        _cam.open(_video_src);
-
-        // if this fails, try to open as a video camera, through the use of an integer param
+        // try to open a video camera, through the use of an integer param
+        _cam.open(atoi(_video_src.c_str()));
+        // if this fails, try to open string as a video file or image sequence
         if (!_cam.isOpened()) {
-            _cam.open(atoi(_video_src.c_str()));
+            _cam.open(_video_src);
         }
     };
 

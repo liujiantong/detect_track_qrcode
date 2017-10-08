@@ -46,7 +46,6 @@ bool SimpleCamera::init_camera() {
 
 
 void SimpleCamera::update_camera() {
-    // FIXME: stop thread here
     while (true) {
         if (_is_running) {
             _cam >> _frame;

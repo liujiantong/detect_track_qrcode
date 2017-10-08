@@ -2,12 +2,17 @@
 #include "detector.hpp"
 #include "helper.hpp"
 
+#include <chrono>
 #include <opencv2/xphoto/white_balance.hpp>
 
 
 void ToyTracker::init_tracker() {
     cv::Size size = _camera->get_frame_width_and_height();
     _frame_size = get_frame_size(size);
+
+    // allocate _frame and _debug_image here
+    _frame.create(_frame_size.height, _frame_size.width, CV_32F);
+    _debug_frame.create(_frame_size.height, _frame_size.width, CV_32F);
 
     int n_states = 4, n_measurements = 2;
     _kalman.init(n_states, n_measurements);
@@ -57,22 +62,62 @@ void ToyTracker::track() {
     cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(9, 9));
 
     while (true) {
-        // TODO:
+        read_from_camera();
+        _frame.copyTo(_debug_frame);
 
         if (!_is_running) {
             break;
         }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
 
-    // TODO:
-    // self._is_running = True
-    //
-    // detector = ToyDetector()
-    // wb = cv2.xphoto.createSimpleWB()
-    // kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
-    //
-    // while True:
+    /* TODO:
+    while True:
+        self._read_from_camera()
+        self._debug_frame = self._frame.copy()
+
+        united_rect = self._compute_bound_rect(self._frame, self._frame_width, self._frame_height, kernel)
+        if united_rect is not None:
+            self._united_fg = united_rect
+            roi_x, roi_y, roi_w, roi_h = self._united_fg
+
+            roi_image = self._frame[roi_y:roi_y + roi_h, roi_x:roi_x + roi_w]
+
+            roi_image = wb.balanceWhite(roi_image)
+            roi_gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
+
+            founds = detector.find_contours(roi_gray)
+            if founds:
+                roi_image = wb.balanceWhite(roi_image)
+                colors, cnt = detector.detect_color_from_contours(roi_image, founds)
+                if cnt is not None:
+                    self._toy_colors = colors
+                    self._toy_contour = cnt + np.array([roi_x, roi_y])
+                    self._measurement = helper.center(self._toy_contour)
+                    self._kalman.correct(self._measurement)
+                    self._toy_prediction = self._kalman.predict()
+                    _, self._toy_radius = cv2.minEnclosingCircle(cnt)
+                    self._add_new_tracker_point()
+        else:
+            self._clear_debug_things()
+
+        if self._debug:
+            self._draw_debug_things(draw_fg=False)
+
+        if self._tracking_callback is not None:
+            try:
+                self._tracking_callback()
+            except TypeError:
+                import warnings
+                warnings.warn(
+                    "Tracker callback function is not working because of wrong arguments! "
+                    "It takes zero arguments")
+
+        if not self._is_running:
+            break
+    */
 }
 
 
