@@ -65,10 +65,25 @@ void ToyTracker::track() {
         read_from_camera();
         _frame.copyTo(_debug_frame);
 
+        cv::Rect united_rect = compute_bound_rect(_frame, _frame_size, kernel);
+        if (united_rect.width > 0) {
+            _united_fg = united_rect;
+            int roi_x = _united_fg.x, roi_y = _united_fg.y;
+            int roi_w = _united_fg.width, roi_h = _united_fg.height;
+
+            cv::Mat roi_gray;
+            cv::Mat roi_image = _frame(_united_fg);
+            cv::cvtColor(roi_image, roi_gray, cv::COLOR_BGR2GRAY);
+
+            std::vector<std::vector<cv::Point> > founds = detector.find_contours(roi_gray);
+            if (!founds.empty()) {
+                wb->balanceWhite(roi_image, roi_image);
+            }
+        }
+
         if (!_is_running) {
             break;
         }
-
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
@@ -85,7 +100,7 @@ void ToyTracker::track() {
 
             roi_image = self._frame[roi_y:roi_y + roi_h, roi_x:roi_x + roi_w]
 
-            roi_image = wb.balanceWhite(roi_image)
+            // roi_image = wb.balanceWhite(roi_image)
             roi_gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
 
             founds = detector.find_contours(roi_gray)
@@ -129,7 +144,7 @@ void ToyTracker::read_from_camera() {
 }
 
 
-cv::Rect ToyTracker::compute_bound_rect(cv::Mat& frm, int max_x, int max_y, cv::Mat& kernel) {
+cv::Rect ToyTracker::compute_bound_rect(cv::Mat& frm, cv::Size max_size, cv::Mat& kernel) {
     cv::Mat fg_mask;
     _fgbg->apply(frm, fg_mask);
 
@@ -154,12 +169,12 @@ cv::Rect ToyTracker::compute_bound_rect(cv::Mat& frm, int max_x, int max_y, cv::
 
     cv::Rect r = union_rects(boxes);
     int w = r.width;
-    if (r.x + w > max_x) {
-        w = max_x - r.x;
+    if (r.x + w > max_size.width) {
+        w = max_size.width - r.x;
     }
     int h = r.height;
-    if (r.y + h > max_y) {
-        h = max_y - r.y;
+    if (r.y + h > max_size.height) {
+        h = max_size.height - r.y;
     }
 
     return cv::Rect(r.x, r.y, w, h);

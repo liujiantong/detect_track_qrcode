@@ -23,13 +23,13 @@ public:
 private:
     SimpleCamera* _camera;
     std::deque<cv::Point> _tracker_centers;
-    bool _debug;
     int _max_nb_of_centers;
     tracking_callback _tracking_cb;
     bool _is_running;
     cv::Size _frame_size;
     cv::Mat _frame;
     cv::Mat _debug_frame;
+    bool _debug;
 
     cv::Rect _united_fg;
     cv::Rect _toy_contour;
@@ -45,7 +45,7 @@ private:
     void read_from_camera();
 
     void add_new_tracker_point(cv::Point pnt, int min_distance=20, int max_distance=1000);
-    cv::Rect compute_bound_rect(cv::Mat& frm, int max_x, int max_y, cv::Mat& kernel);
+    cv::Rect compute_bound_rect(cv::Mat& frm, cv::Size max_size, cv::Mat& kernel);
 
     void clear_debug_things() {
         _toy_colors.clear();

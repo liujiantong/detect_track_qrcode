@@ -28,7 +28,7 @@ public:
     };
 
     cv::Size get_frame_width_and_height() {
-        return cv::Size(_frame_width, _frame_height);
+        return _frame_size;
     };
 
     inline double get_fps() {
@@ -47,8 +47,9 @@ private:
     cv::VideoCapture _cam;
     cv::Mat _frame;
     double _fps;
-    unsigned _frame_width;
-    unsigned _frame_height;
+    cv::Size _frame_size;
+    // unsigned _frame_width;
+    // unsigned _frame_height;
     bool _ret;
     std::string _video_src;
     bool _is_running;

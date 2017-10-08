@@ -30,8 +30,8 @@ bool SimpleCamera::init_camera() {
     }
 
     _fps = _cam.get(cv::CAP_PROP_FPS);
-    _frame_height = _cam.get(cv::CAP_PROP_FRAME_HEIGHT);
-    _frame_width = _cam.get(cv::CAP_PROP_FRAME_WIDTH);
+    _frame_size.width = _cam.get(cv::CAP_PROP_FRAME_WIDTH);
+    _frame_size.height = _cam.get(cv::CAP_PROP_FRAME_HEIGHT);
 
     _cam >> _frame;
     if (_frame.empty()) {
