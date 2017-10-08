@@ -116,7 +116,7 @@ void ToyTracker::track() {
                     _toy_contour = cnt;
                     _toy_colors = colors;
 
-                    for (auto p : _toy_contour) {
+                    for (auto& p : _toy_contour) {
                         p += cv::Point(roi_x, roi_y);
                     }
                     logger->debug("roi rect offset done.");
@@ -163,9 +163,10 @@ void ToyTracker::read_from_camera() {
 
     cv::Mat frame(_frame_size.height, _frame_size.width, CV_32F);
     cv::Mat* p_frame = _camera->read();
+    cv::Mat cloned = (*p_frame).clone();
     logger->debug("read to p_frame done");
 
-    cv::resize(*p_frame, frame, _frame_size, cv::INTER_AREA);
+    cv::resize(cloned, frame, _frame_size, cv::INTER_AREA);
     cv::flip(frame, _frame, 1);
     logger->debug("-----> ToyTracker::read_from_camera done");
 }
@@ -191,16 +192,16 @@ void ToyTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_pr
 }
 
 
-cv::Rect ToyTracker::compute_fg_bound_rect(const cv::Mat& frm, cv::Size max_size, cv::Mat& kernel) {
+cv::Rect ToyTracker::compute_fg_bound_rect(const cv::Mat& frm_img, cv::Size max_size, cv::Mat& kernel) {
     auto logger = spd::get("console");
     logger->debug("compute_fg_bound_rect start");
 
-    // cv::Mat frm = frm_img.clone();
-    // logger->debug("frm cloned");
+    cv::Mat frm = frm_img.clone();
+    logger->debug("frm cloned");
 
     cv::Mat fg_mask;
     _fgbg->apply(frm, fg_mask);
-    logger->debug("apply done");
+    logger->debug("_fgbg apply done");
 
     cv::morphologyEx(fg_mask, fg_mask, cv::MORPH_OPEN, kernel);
     cv::morphologyEx(fg_mask, fg_mask, cv::MORPH_CLOSE, kernel);

@@ -17,7 +17,7 @@ class ToyTracker {
 public:
     ToyTracker(SimpleCamera* cam, int nb_of_cntr=30, bool debug=false) : _camera(cam),
     _max_nb_of_centers(nb_of_cntr), _debug(debug) {
-        _tracking_cb = NULL;
+        _tracking_cb = nullptr;
         _united_fg = cv::Rect(0, 0, -1, -1);
         init_tracker();
     };

@@ -29,6 +29,7 @@ void tracking_cb(ToyTracker* tracker) {
     cv::Mat* debug_frame = tracker->get_debug_frame();
     // cv::Point toy_center = tracker->get_last_toy_center();
     auto colors = tracker->get_toy_colors();
+    logger->debug("toy colors:{}", join(colors));
 
     cv::imshow("debug frame", *debug_frame);
 
@@ -37,7 +38,7 @@ void tracking_cb(ToyTracker* tracker) {
         tracker->stop_tracking();
     }
 
-    logger->debug("toy colors: {}", join(colors));
+    logger->debug("tracking_cb done.");
 }
 
 
