@@ -159,14 +159,11 @@ void MockTracker::track() {
 
 
 void MockTracker::read_from_camera() {
-    // FIXME: concurrent frame write here.
+    // concurrent frame write here.
     auto logger = spd::get("console");
 
     // cv::Mat frm_buf(_frame_size.height, _frame_size.width, CV_32F);
-    // FIXME: frm empty here
     cv::Mat frm = _camera->read();
-    // cv::Mat cloned = (*p_frame).clone();
-    logger->debug("read to frame0 done");
     if (frm.empty()) {
         logger->error("read_from_camera: frm empty");
         return;
@@ -174,7 +171,7 @@ void MockTracker::read_from_camera() {
 
     cv::resize(frm, _frame, _frame_size, cv::INTER_AREA);
     cv::flip(_frame, _frame, 1);
-    logger->debug("-----> ToyTracker::read_from_camera done. _frame:[{}:{}]", _frame.cols, _frame.rows);
+    // logger->debug("-----> ToyTracker::read_from_camera done. _frame:[{}:{}]", _frame.cols, _frame.rows);
 }
 
 
