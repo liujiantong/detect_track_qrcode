@@ -21,7 +21,7 @@ void MockTracker::init_tracker() {
 
     int n_states = 4, n_measurements = 2;
     _kalman.init(n_states, n_measurements);
-    // logger->debug("_kalman inited");
+    logger->debug("_kalman inited");
 
     /* DYNAMIC MODEL
     [1, 0, 1, 0]
