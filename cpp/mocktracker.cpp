@@ -87,7 +87,6 @@ void MockTracker::track() {
         logger->debug("_frame:[w:{},h:{}] copyTo _debug_frame done", _frame.cols, _frame.rows);
 
         cv::Rect united_rect = compute_fg_bound_rect(_frame, _frame_size, kernel);
-        // cv::Rect united_rect(0, 0, 200, 200);
         logger->debug("united_rect: w:{}, h:{}", united_rect.width, united_rect.height);
 
         if (united_rect.width > 0) {
@@ -100,8 +99,7 @@ void MockTracker::track() {
             cv::cvtColor(roi_image, roi_gray, cv::COLOR_BGR2GRAY);
             logger->debug("cvtColor done");
 
-            // std::vector<std::vector<cv::Point> > founds = detector.find_contours(roi_gray);
-            std::vector<std::vector<cv::Point> > founds;
+            std::vector<std::vector<cv::Point> > founds = detector.find_contours(roi_gray);
             logger->debug("founds.size:{}", founds.size());
 
             if (!founds.empty()) {
