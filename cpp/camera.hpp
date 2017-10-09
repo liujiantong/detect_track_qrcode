@@ -10,12 +10,18 @@
 
 class SimpleCamera {
 public:
-    SimpleCamera(std::string& vsrc) : _ret(false), _video_src(vsrc), _is_running(false) {
+    SimpleCamera(std::string& vsrc) : _ret(false), _video_src(vsrc), _is_running(false), _worker() {
         // try to open string as a video file or image sequence
         _cam.open(_video_src);
         // if this fails, try to open a video camera, through the use of an integer param
         if (!_cam.isOpened()) {
             _cam.open(atoi(_video_src.c_str()));
+        }
+    };
+
+    ~SimpleCamera() {
+        if (_worker.joinable()) {
+            _worker.join();
         }
     };
 
@@ -29,7 +35,7 @@ public:
         return _frame;
     };
 
-    cv::Size get_frame_width_and_height() {
+    cv::Size get_frame_size() {
         return _frame_size;
     };
 

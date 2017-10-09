@@ -2,6 +2,7 @@
 #define __HIVE_TRACKER_HPP__
 
 #include <opencv2/opencv.hpp>
+#include <opencv2/xphoto/white_balance.hpp>
 #include <vector>
 #include <deque>
 
@@ -72,6 +73,7 @@ private:
 
     cv::KalmanFilter _kalman;
     cv::Ptr<cv::BackgroundSubtractorMOG2> _fgbg;
+    cv::Ptr<cv::xphoto::SimpleWB> _wb;
 
     void init_tracker();
     void read_from_camera();

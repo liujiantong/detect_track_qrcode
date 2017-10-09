@@ -4,7 +4,6 @@
 #include "spdlog/spdlog.h"
 
 #include <chrono>
-#include <opencv2/xphoto/white_balance.hpp>
 
 
 namespace spd = spdlog;
@@ -12,7 +11,7 @@ namespace spd = spdlog;
 void ToyTracker::init_tracker() {
     // auto logger = spd::get("console");
 
-    cv::Size size = _camera->get_frame_width_and_height();
+    cv::Size size = _camera->get_frame_size();
     // logger->debug("size from camera - w:{}, h{}", size.width, size.height);
 
     _frame_size = get_frame_size(size);
@@ -64,6 +63,7 @@ void ToyTracker::init_tracker() {
     // logger->debug("_kalman params ready");
 
     _fgbg = cv::createBackgroundSubtractorMOG2(300, 16, false);
+    _wb = cv::xphoto::createSimpleWB();
 
     // logger->debug("init_tracker done.");
 }
@@ -76,7 +76,6 @@ void ToyTracker::track() {
     _is_running = true;
 
     ToyDetector detector;
-    cv::Ptr<cv::xphoto::SimpleWB> wb = cv::xphoto::createSimpleWB();
     cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(9, 9));
 
     while (true) {
@@ -84,9 +83,10 @@ void ToyTracker::track() {
         logger->debug("read_from_camera done");
 
         _frame.copyTo(_debug_frame);
-        logger->debug("copyTo _debug_frame done");
+        logger->debug("_frame:[w:{},h:{}] copyTo _debug_frame done", _frame.cols, _frame.rows);
 
-        cv::Rect united_rect = compute_fg_bound_rect(_frame, _frame_size, kernel);
+        // cv::Rect united_rect = compute_fg_bound_rect(_frame, _frame_size, kernel);
+        cv::Rect united_rect(0, 0, 200, 200);
         logger->debug("united_rect: w:{}, h:{}", united_rect.width, united_rect.height);
 
         if (united_rect.width > 0) {
@@ -99,11 +99,12 @@ void ToyTracker::track() {
             cv::cvtColor(roi_image, roi_gray, cv::COLOR_BGR2GRAY);
             logger->debug("cvtColor done");
 
-            std::vector<std::vector<cv::Point> > founds = detector.find_contours(roi_gray);
+            // std::vector<std::vector<cv::Point> > founds = detector.find_contours(roi_gray);
+            std::vector<std::vector<cv::Point> > founds;
             logger->debug("founds.size:{}", founds.size());
 
             if (!founds.empty()) {
-                wb->balanceWhite(roi_image, roi_image);
+                _wb->balanceWhite(roi_image, roi_image);
                 logger->debug("balanceWhite done");
 
                 std::vector<cv::Point> cnt;
@@ -159,14 +160,19 @@ void ToyTracker::read_from_camera() {
     // FIXME: concurrent frame write here.
     auto logger = spd::get("console");
 
-    cv::Mat frame(_frame_size.height, _frame_size.width, CV_32F);
-    cv::Mat frame0 = _camera->read();
+    // cv::Mat frm_buf(_frame_size.height, _frame_size.width, CV_32F);
+    // FIXME: frm empty here
+    cv::Mat frm = _camera->read();
     // cv::Mat cloned = (*p_frame).clone();
     logger->debug("read to frame0 done");
+    if (frm.empty()) {
+        logger->error("read_from_camera: frm empty");
+        return;
+    }
 
-    cv::resize(frame0, frame, _frame_size, cv::INTER_AREA);
-    cv::flip(frame, _frame, 1);
-    logger->debug("-----> ToyTracker::read_from_camera done");
+    cv::resize(frm, _frame, _frame_size, cv::INTER_AREA);
+    cv::flip(_frame, _frame, 1);
+    logger->debug("-----> ToyTracker::read_from_camera done. _frame:[{}:{}]", _frame.cols, _frame.rows);
 }
 
 
@@ -176,16 +182,19 @@ void ToyTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_pr
 
     if (draw_fg && _united_fg.width > 0) {
         cv::rectangle(_debug_frame, _united_fg, cv::Scalar(0, 255, 0), 2);
+        logger->debug("draw fg");
     }
 
     if (draw_contour && !_toy_contour.empty()) {
         std::vector<std::vector<cv::Point> > cnts0 = {_toy_contour};
         cv::drawContours(_debug_frame, cnts0, 0, cv::Scalar(0, 0, 255), 2);
+        logger->debug("draw contour");
     }
 
     if (draw_prediction && _toy_radius > 0) {
         cv::Point c(_toy_prediction.at<float>(0), _toy_prediction.at<float>(0));
         cv::circle(_debug_frame, c, _toy_radius, cv::Scalar(255, 0, 0), 2);
+        logger->debug("draw prediction");
     }
 }
 
@@ -193,7 +202,7 @@ void ToyTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_pr
 cv::Rect ToyTracker::compute_fg_bound_rect(const cv::Mat& frm, cv::Size max_size, cv::Mat& kernel) {
 // cv::Rect ToyTracker::compute_fg_bound_rect(const cv::Mat frm, cv::Size max_size, cv::Mat& kernel) {
     auto logger = spd::get("console");
-    logger->debug("compute_fg_bound_rect start");
+    logger->debug("compute_fg_bound_rect start. frm:[{}, {}]", frm.cols, frm.rows);
 
     cv::Mat fg_mask;
     _fgbg->apply(frm, fg_mask);

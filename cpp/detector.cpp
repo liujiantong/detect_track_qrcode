@@ -1,8 +1,11 @@
 #include "detector.hpp"
 #include "helper.hpp"
+#include "spdlog/spdlog.h"
 
 #include <vector>
 #include <algorithm>
+
+namespace spd = spdlog;
 
 
 const cv::Range RED_RANGE1(10, 30);
@@ -72,11 +75,10 @@ std::vector<std::string> ToyDetector::detect_color_from_contours(cv::Mat& img,
 }
 
 
-std::vector<std::string> ToyDetector::detect_color_in(
-    cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst) {
-    // cv::Mat dst;
-    std::vector<std::string> colors;
+std::vector<std::string> ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst) {
+    // auto logger = spd::get("console");
 
+    std::vector<std::string> colors;
     cv::Point2f src_pnts[3], square_pnts[3];
 
     src_pnts[0] = cv::Point2f(cnt[0]);
@@ -88,8 +90,10 @@ std::vector<std::string> ToyDetector::detect_color_in(
 
     cv::Rect r = cv::boundingRect(cnt);
     out_dst.create(r.height, r.width, img.depth());
+    // logger->debug("img.dept: {}", img.depth());
 
     cv::Mat mtx = cv::getAffineTransform(src_pnts, square_pnts);
+    // FIXME: Assertion failed ((M0.type() == CV_32F || M0.type() == CV_64F) && M0.rows == 2 && M0.cols == 3)
     cv::warpAffine(img, mtx, out_dst, cv::Size(r.width, r.height));
     int half_block_size = _block_size / 2;
 
