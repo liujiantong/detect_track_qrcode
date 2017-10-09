@@ -32,6 +32,7 @@ bool SimpleCamera::init_camera() {
         logger->error("Failed to open the video device or video file!");
         return false;
     }
+    logger->debug("_cam opened");
 
     _fps = _cam.get(cv::CAP_PROP_FPS);
     _frame_size.width = _cam.get(cv::CAP_PROP_FRAME_WIDTH);
@@ -39,7 +40,7 @@ bool SimpleCamera::init_camera() {
     logger->debug("width:{}, height:{}", _frame_size.width, _frame_size.height);
 
     _cam >> _frame;
-    // logger->debug("====> SimpleCamera read to _frame");
+    logger->debug("====> SimpleCamera read to _frame");
 
     if (_frame.empty()) {
         _ret = false;

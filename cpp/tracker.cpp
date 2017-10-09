@@ -190,8 +190,8 @@ void ToyTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_pr
 }
 
 
-// cv::Rect ToyTracker::compute_fg_bound_rect(const cv::Mat& frm, cv::Size max_size, cv::Mat& kernel) {
-cv::Rect ToyTracker::compute_fg_bound_rect(const cv::Mat frm, cv::Size max_size, cv::Mat& kernel) {
+cv::Rect ToyTracker::compute_fg_bound_rect(const cv::Mat& frm, cv::Size max_size, cv::Mat& kernel) {
+// cv::Rect ToyTracker::compute_fg_bound_rect(const cv::Mat frm, cv::Size max_size, cv::Mat& kernel) {
     auto logger = spd::get("console");
     logger->debug("compute_fg_bound_rect start");
 
