@@ -10,13 +10,13 @@
 namespace spd = spdlog;
 
 void ToyTracker::init_tracker() {
-    auto logger = spd::get("console");
+    // auto logger = spd::get("console");
 
     cv::Size size = _camera->get_frame_width_and_height();
     // logger->debug("size from camera - w:{}, h{}", size.width, size.height);
 
     _frame_size = get_frame_size(size);
-    logger->debug("_frame_size - w:{}, h{}", _frame_size.width, _frame_size.height);
+    // logger->debug("_frame_size - w:{}, h:{}", _frame_size.width, _frame_size.height);
 
     // allocate _frame and _debug_image here
     _frame.create(_frame_size.height, _frame_size.width, CV_32F);
@@ -24,6 +24,7 @@ void ToyTracker::init_tracker() {
 
     int n_states = 4, n_measurements = 2;
     _kalman.init(n_states, n_measurements);
+    // logger->debug("_kalman inited");
 
     /* DYNAMIC MODEL
     [1, 0, 1, 0]
@@ -59,11 +60,12 @@ void ToyTracker::init_tracker() {
     _kalman.processNoiseCov.at<double>(3, 3) = cov;
 
     _measurement = cv::Mat(n_measurements, 1, CV_32F);
-    // _toy_prediction = cv::Mat(n_measurements, 1, CV_32F);
+    _toy_prediction = cv::Mat(n_measurements, 1, CV_32F);
+    // logger->debug("_kalman params ready");
 
     _fgbg = cv::createBackgroundSubtractorMOG2(300, 16, false);
 
-    logger->debug("init_tracker done.");
+    // logger->debug("init_tracker done.");
 }
 
 
@@ -76,8 +78,6 @@ void ToyTracker::track() {
     ToyDetector detector;
     cv::Ptr<cv::xphoto::SimpleWB> wb = cv::xphoto::createSimpleWB();
     cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(9, 9));
-
-    logger->debug("ready for while loop");
 
     while (true) {
         read_from_camera();
@@ -92,7 +92,6 @@ void ToyTracker::track() {
         if (united_rect.width > 0) {
             _united_fg = united_rect;
             int roi_x = _united_fg.x, roi_y = _united_fg.y;
-            // int roi_w = _united_fg.width, roi_h = _united_fg.height;
             logger->debug("get roi_x:{} done", roi_x);
 
             cv::Mat roi_gray;
@@ -139,7 +138,7 @@ void ToyTracker::track() {
         }
 
         if (_debug) {
-            draw_debug_things();
+            draw_debug_things(true);
         }
 
         if (_tracking_cb) {
@@ -159,14 +158,13 @@ void ToyTracker::track() {
 void ToyTracker::read_from_camera() {
     // FIXME: concurrent frame write here.
     auto logger = spd::get("console");
-    // logger->debug("_frame_size w:{}, h:{}", _frame_size.width, _frame_size.height);
 
     cv::Mat frame(_frame_size.height, _frame_size.width, CV_32F);
-    cv::Mat* p_frame = _camera->read();
-    cv::Mat cloned = (*p_frame).clone();
-    logger->debug("read to p_frame done");
+    cv::Mat frame0 = _camera->read();
+    // cv::Mat cloned = (*p_frame).clone();
+    logger->debug("read to frame0 done");
 
-    cv::resize(cloned, frame, _frame_size, cv::INTER_AREA);
+    cv::resize(frame0, frame, _frame_size, cv::INTER_AREA);
     cv::flip(frame, _frame, 1);
     logger->debug("-----> ToyTracker::read_from_camera done");
 }
@@ -192,12 +190,10 @@ void ToyTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_pr
 }
 
 
-cv::Rect ToyTracker::compute_fg_bound_rect(const cv::Mat& frm_img, cv::Size max_size, cv::Mat& kernel) {
+// cv::Rect ToyTracker::compute_fg_bound_rect(const cv::Mat& frm, cv::Size max_size, cv::Mat& kernel) {
+cv::Rect ToyTracker::compute_fg_bound_rect(const cv::Mat frm, cv::Size max_size, cv::Mat& kernel) {
     auto logger = spd::get("console");
     logger->debug("compute_fg_bound_rect start");
-
-    cv::Mat frm = frm_img.clone();
-    logger->debug("frm cloned");
 
     cv::Mat fg_mask;
     _fgbg->apply(frm, fg_mask);

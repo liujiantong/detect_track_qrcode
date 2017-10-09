@@ -56,8 +56,8 @@ int main(int argc, char const *argv[]) {
     std::string filename = "frame_cap.png";
 
     while (true) {
-        cv::Mat* p_frame = camera.read();
-        cv::imshow(window_name, *p_frame);
+        cv::Mat frame = camera.read();
+        cv::imshow(window_name, frame);
 
         char key = (char) cv::waitKey(10);
         switch (key) {
@@ -66,7 +66,7 @@ int main(int argc, char const *argv[]) {
         case 27: //escape key
             return 0;
         case ' ': //Save an image
-            imwrite(filename, *p_frame);
+            imwrite(filename, frame);
             logger->info("{} saved", filename);
             break;
         default:

@@ -15,7 +15,7 @@ void SimpleCamera::start_camera() {
 
     bool ret = init_camera();
     if (!ret) {
-        spd::get("console")->error("Failed to init camera");
+        logger->error("Failed to init camera");
         throw std::runtime_error("Failed to init camera");
     }
     logger->debug("ready to start worker");
@@ -29,8 +29,7 @@ bool SimpleCamera::init_camera() {
     auto logger = spd::get("console");
 
     if (!_cam.isOpened()) {
-        // std::cerr << "Failed to open the video device or video file!\n" << std::endl;
-        spd::get("console")->error("Failed to open the video device or video file!");
+        logger->error("Failed to open the video device or video file!");
         return false;
     }
 
@@ -40,7 +39,7 @@ bool SimpleCamera::init_camera() {
     logger->debug("width:{}, height:{}", _frame_size.width, _frame_size.height);
 
     _cam >> _frame;
-    logger->debug("====> SimpleCamera read to _frame");
+    // logger->debug("====> SimpleCamera read to _frame");
 
     if (_frame.empty()) {
         _ret = false;
@@ -55,10 +54,19 @@ bool SimpleCamera::init_camera() {
 
 void SimpleCamera::update_camera() {
     while (_is_running) {
-        _cam >> _frame;
+        cv::Mat img_buf;
+        _cam >> img_buf;
+
+        {
+            std::lock_guard<std::mutex> lg(v_mutex);
+            img_buf.copyTo(_frame);
+            // _cam >> _frame;
+        }
+
         if (_frame.empty()) {
             _ret = false;
         }
+
         std::this_thread::yield();
     }
 } // SimpleCamera::update_camera

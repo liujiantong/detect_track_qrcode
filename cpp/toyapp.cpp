@@ -48,6 +48,7 @@ int main(int argc, char const *argv[]) {
     logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] %v");
 
     std::string video_src = "0";
+    // std::string video_src = "../../output.avi";
     SimpleCamera camera(video_src);
     camera.start_camera();
 

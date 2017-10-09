@@ -5,16 +5,17 @@
 
 #include <string>
 #include <thread>
+#include <mutex>
 
 
 class SimpleCamera {
 public:
     SimpleCamera(std::string& vsrc) : _ret(false), _video_src(vsrc), _is_running(false) {
-        // try to open a video camera, through the use of an integer param
-        _cam.open(atoi(_video_src.c_str()));
-        // if this fails, try to open string as a video file or image sequence
+        // try to open string as a video file or image sequence
+        _cam.open(_video_src);
+        // if this fails, try to open a video camera, through the use of an integer param
         if (!_cam.isOpened()) {
-            _cam.open(_video_src);
+            _cam.open(atoi(_video_src.c_str()));
         }
     };
 
@@ -23,8 +24,9 @@ public:
         _is_running = false;
     };
 
-    cv::Mat* read() {
-        return &_frame;
+    cv::Mat read() {
+        std::lock_guard<std::mutex> lg(v_mutex);
+        return _frame;
     };
 
     cv::Size get_frame_width_and_height() {
@@ -48,12 +50,12 @@ private:
     cv::Mat _frame;
     double _fps;
     cv::Size _frame_size;
-    // unsigned _frame_width;
-    // unsigned _frame_height;
     bool _ret;
     std::string _video_src;
     bool _is_running;
     std::thread _worker;
+
+    std::mutex v_mutex;
 };
 
 #endif // __HIVE_CAMERA_HPP__
