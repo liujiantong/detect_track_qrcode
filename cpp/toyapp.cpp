@@ -24,17 +24,14 @@ std::string join(std::vector<std::string>& v) {
 
 void tracking_cb(MockTracker* tracker) {
     auto logger = spd::get("console");
-    logger->debug("############ tracking_cb start");
-
     cv::Mat* debug_frame = tracker->get_debug_frame();
     // cv::Point toy_center = tracker->get_last_toy_center();
     auto colors = tracker->get_toy_colors();
-    logger->debug("debug_frame.size:({}, {}), toy colors:{}",
-                  debug_frame->size().width, debug_frame->size().height, join(colors));
+    logger->debug("toy colors:{}", join(colors));
 
     cv::imshow("debug frame", *debug_frame);
 
-    char key = (char) cv::waitKey(3);
+    char key = (char)cv::waitKey(1);
     if (key == 27 || key == 'q' || key == 'Q') {
         tracker->stop_tracking();
     }
