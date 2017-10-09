@@ -1,5 +1,5 @@
 #include "camera.hpp"
-#include "tracker.hpp"
+#include "mocktracker.hpp"
 #include "spdlog/spdlog.h"
 
 #include <iterator>
@@ -22,7 +22,7 @@ std::string join(std::vector<std::string>& v) {
 }
 
 
-void tracking_cb(ToyTracker* tracker) {
+void tracking_cb(MockTracker* tracker) {
     auto logger = spd::get("console");
     logger->debug("############ tracking_cb start");
 
@@ -39,7 +39,7 @@ void tracking_cb(ToyTracker* tracker) {
         tracker->stop_tracking();
     }
 
-    // logger->debug("tracking_cb done.");
+    logger->debug("tracking_cb done.");
 }
 
 
@@ -55,7 +55,7 @@ int main(int argc, char const *argv[]) {
 
     logger->debug("camera started");
 
-    ToyTracker tracker(&camera, 30, true);
+    MockTracker tracker(&camera, 30, true);
     tracker.set_tracking_callback(&tracking_cb);
     tracker.track();
 
