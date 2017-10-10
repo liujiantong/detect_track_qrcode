@@ -8,7 +8,7 @@
 namespace spd = spdlog;
 
 
-const cv::Range RED_RANGE1(10, 30);
+const cv::Range RED_RANGE1(0, 30);
 const cv::Range RED_RANGE2(150, 180);
 const cv::Range GREEN_RANGE(30, 90);
 const cv::Range BLUE_RANGE(90, 140);
@@ -51,8 +51,8 @@ std::vector<std::vector<cv::Point> > ToyDetector::find_code_contours(cv::Mat& gr
 std::vector<std::string> ToyDetector::detect_color_from_contours(cv::Mat& img,
     std::vector<std::vector<cv::Point> >& cnts,
     std::vector<cv::Point>& out_cnt) {
-    // auto logger = spd::get("console");
 
+    auto logger = spd::get("console");
     std::vector<std::vector<cv::Point>> square_cnts;
     for (auto cnt0 : cnts) {
         std::tuple<bool, std::vector<cv::Point> > result = detect_square(cnt0);
@@ -60,17 +60,22 @@ std::vector<std::string> ToyDetector::detect_color_from_contours(cv::Mat& img,
             square_cnts.push_back(std::get<1>(result));
         }
     }
+    logger->debug("square_cnts.size:{}", square_cnts.size());
 
     if (square_cnts.empty()) {
         std::vector<std::string> colors;
         return colors;
     }
 
+    // FIXME:
+    // cv::imwrite("roi_color.png", img);
+
     cv::Mat out_dst;
     std::vector<cv::Point> bound_cnt = check_cnt_contain(square_cnts);
     std::vector<std::string> colors = detect_color_in(img, bound_cnt, out_dst);
     // fill out_cnt
     out_cnt.assign(bound_cnt.begin(), bound_cnt.end());
+    logger->debug("colors.size:{}", colors.size());
 
     return colors;
 }
@@ -94,16 +99,25 @@ std::vector<std::string> ToyDetector::detect_color_in(cv::Mat& img, std::vector<
         return colors;
     }
 
-    out_dst.create(r.size(), img.type());
+    // out_dst.create(r.size(), img.type());
+    out_dst.create(_block_size, _block_size, img.type());
 
     cv::Mat mtx = cv::getAffineTransform(src_pnts, square_pnts);
-    cv::warpAffine(img, out_dst, mtx, cv::Size(r.width, r.height));
+    // cv::warpAffine(img, out_dst, mtx, cv::Size(r.width, r.height));
+    cv::warpAffine(img, out_dst, mtx, cv::Size(_block_size, _block_size));
     int half_block_size = _block_size / 2;
 
     cv::Mat roi1 = out_dst(cv::Rect(0, 0, half_block_size, half_block_size));
     cv::Mat roi2 = out_dst(cv::Rect(half_block_size, 0, half_block_size, half_block_size));
     cv::Mat roi3 = out_dst(cv::Rect(half_block_size, half_block_size, half_block_size, half_block_size));
     cv::Mat roi4 = out_dst(cv::Rect(0, half_block_size, half_block_size, half_block_size));
+
+    /* FIXME: for debug
+    cv::imwrite("roi1.png", roi1);
+    cv::imwrite("roi2.png", roi2);
+    cv::imwrite("roi3.png", roi3);
+    cv::imwrite("roi4.png", roi4);
+    */
 
     colors.push_back(detect_color(roi1));
     colors.push_back(detect_color(roi2));
@@ -160,7 +174,9 @@ std::tuple<bool, std::vector<cv::Point> > ToyDetector::detect_square(std::vector
 
 
 std::string ToyDetector::detect_color(cv::Mat& roi) {
-    cv::Mat hsv, mask, white_mask, hue, hist;
+    auto logger = spd::get("console");
+
+    cv::Mat hsv, mask, white_mask, hist;
     cv::cvtColor(roi, hsv, cv::COLOR_BGR2HSV);
 
     cv::inRange(hsv, cv::Scalar(0, 20, 0), cv::Scalar(180, 255, 255), mask);
@@ -175,28 +191,34 @@ std::string ToyDetector::detect_color(cv::Mat& roi) {
         return "white";
     }
 
-    hue.create(hsv.size(), hsv.depth());
-    int ch[] = { 0, 0 };
-    cv::mixChannels(&hsv, 1, &hue, 1, ch, 1);
-
     // int hsize = 30;
     int hsize = 180;
-    float hue_range[] = { 0, 180 };
-    const float* ranges = { hue_range };
+    int channels[] = {0};
+    float hue_range[] = { 0.0f, 180.0f };
+    const float* ranges[] = { hue_range };
 
-    cv::calcHist(&hue, 1, 0, cv::Mat(), hist, 1, &hsize, &ranges);
-    cv::normalize(hist, hist, 0, 255, cv::NORM_MINMAX, -1, cv::Mat());
+    cv::calcHist(&hsv, 1, channels, mask, hist, 1, &hsize, ranges, true);
+    cv::normalize(hist, hist, 0.0, 1.0, cv::NORM_MINMAX);
 
     double rval = sum_histogram(hist, RED_RANGE1) + sum_histogram(hist, RED_RANGE2);
     double gval = sum_histogram(hist, GREEN_RANGE);
     double bval = sum_histogram(hist, BLUE_RANGE);
 
-    if (rval > 0.8) {
-        return "red";
-    } else if (gval > 0.8) {
-        return "green";
-    } else if (bval > 0.8) {
-        return "blue";
+    // find max value
+    std::string colors[] = {"red", "green", "blue"};
+    double max_val = std::max({rval, gval, bval});
+
+    int pos = -1;
+    double vals[] = {rval, gval, bval};
+    for (int i=0; i<3; i++) {
+        // logger->debug("{}:{}", colors[i], vals[i]);
+        if (vals[i] == max_val) {
+            pos = i;
+        }
+    }
+
+    if (max_val > 0.8) {
+        return colors[pos];
     }
     return "unknown";
 }

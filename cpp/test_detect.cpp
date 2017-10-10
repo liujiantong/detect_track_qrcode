@@ -1,43 +1,79 @@
 #include "detector.hpp"
 #include "helper.hpp"
+#include "spdlog/spdlog.h"
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/xphoto/white_balance.hpp>
 
 
+namespace spd = spdlog;
+
+const cv::Range RED_RANGE1(0, 30);
+const cv::Range RED_RANGE2(150, 180);
+const cv::Range GREEN_RANGE(30, 90);
+const cv::Range BLUE_RANGE(90, 140);
+
+
+void calc_color(cv::Mat& img) {
+    auto logger = spd::get("console");
+
+    cv::Mat hsv, mask, hist;
+    cv::cvtColor(img, hsv, cv::COLOR_BGR2HSV);
+    cv::inRange(hsv, cv::Scalar(0, 20, 0), cv::Scalar(180, 255, 255), mask);
+
+    int hsize = 180;
+    int channels[] = {0};
+    float hue_range[] = { 0.0f, 180.0f };
+    const float* ranges[] = { hue_range };
+
+    cv::calcHist(&hsv, 1, channels, mask, hist, 1, &hsize, ranges, true);
+    cv::normalize(hist, hist, 0.0, 1.0, cv::NORM_MINMAX);
+
+    double rval = sum_histogram(hist, RED_RANGE1) + sum_histogram(hist, RED_RANGE2);
+    double gval = sum_histogram(hist, GREEN_RANGE);
+    double bval = sum_histogram(hist, BLUE_RANGE);
+
+    logger->info("r:{}, g:{}, b:{}", rval, gval, bval);
+}
+
+
 int main(int argc, char const *argv[]) {
+    auto logger = spd::stdout_color_mt("console");
+    logger->set_level(spd::level::debug);
+    logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] %v");
+
     cv::Mat gray;
     cv::Mat image = cv::imread("/Users/liutao/mywork/detect_track_qrcode/image/pic01.jpg");
+    cv::Mat roi3 = cv::imread("roi3.png");
 
     cv::Size size = get_frame_size(cv::Size(image.cols, image.rows), 800);
     cv::resize(image, image, size, cv::INTER_AREA);
     cv::imwrite("resized.png", image);
 
-    std::cout << "cols:" << image.cols << ", rows:" << image.rows << std::endl;
+    logger->debug("cols:{}, rows:{}", image.cols, image.rows);
     cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
 
     ToyDetector detector;
     std::vector<std::vector<cv::Point> > founds = detector.find_code_contours(gray);
-    std::cout << "founds.size:" << founds.size() << std::endl;
+    logger->debug("founds.size:{}", founds.size());
 
-    for (int i=0; i<founds.size(); i++) {
-        cv::drawContours(image, founds, i, cv::Scalar(0, 255, 0), 2);
-    }
-    cv::imwrite("draw_cnts.png", image);
+    auto color = detector.detect_color(roi3);
+    logger->info("color in roi3:{}", color);
+    calc_color(roi3);
 
     if (!founds.empty()) {
         auto wb = cv::xphoto::createSimpleWB();
         wb->balanceWhite(image, image);
-        std::cout << "wb created" << std::endl;
+        logger->debug("wb created");
 
         std::vector<cv::Point> cnt;
         std::vector<std::string> colors = detector.detect_color_from_contours(image, founds, cnt);
-        std::cout << "colors.size:" << colors.size() << ", cnt.size:" << cnt.size() << std::endl;
+        logger->debug("colors.size:{}, cnt.size:{}", colors.size(), cnt.size());
 
         for (auto c : colors) {
             std::cout << c << std::endl;
         }
-        std::cout << "print colors" << std::endl;
+        logger->debug("print colors");
 
         if (!cnt.empty()) {
             std::vector<std::vector<cv::Point> > cnts = {cnt};
