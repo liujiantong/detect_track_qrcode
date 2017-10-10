@@ -94,7 +94,7 @@ std::vector<std::string> ToyDetector::detect_color_in(cv::Mat& img, std::vector<
         return colors;
     }
 
-    out_dst.create(r.height, r.width, img.type());
+    out_dst.create(r.size(), img.type());
 
     cv::Mat mtx = cv::getAffineTransform(src_pnts, square_pnts);
     cv::warpAffine(img, out_dst, mtx, cv::Size(r.width, r.height));

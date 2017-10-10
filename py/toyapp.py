@@ -33,4 +33,3 @@ if __name__ == "__main__":
     tracker.track()
 
     cam.release_camera()
-

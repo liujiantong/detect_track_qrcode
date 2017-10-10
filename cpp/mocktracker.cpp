@@ -157,6 +157,7 @@ void MockTracker::read_from_camera() {
     }
 
     cv::resize(frm, _frame, _frame_size, cv::INTER_AREA);
+    // TODO: color order
     cv::flip(_frame, _frame, 1);
 }
 

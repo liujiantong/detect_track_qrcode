@@ -40,7 +40,7 @@ void tracking_cb(MockTracker* tracker) {
 
 int main(int argc, char const *argv[]) {
     auto logger = spd::stdout_color_mt("console");
-    logger->set_level(spd::level::debug);
+    logger->set_level(spd::level::info);
     logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] %v");
 
     // std::string video_src = "0";
