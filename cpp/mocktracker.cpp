@@ -23,6 +23,7 @@ void MockTracker::init_tracker() {
     _kalman.init(n_states, n_measurements);
     logger->debug("_kalman inited");
 
+    // FIXME: BUG HERE
     /* DYNAMIC MODEL
     [1, 0, 1, 0]
     [0, 1, 0, 1]
@@ -122,7 +123,7 @@ void MockTracker::track() {
 
                     cv::Point cntr = pnts_center(_toy_contour);
 
-                    /*
+                    /* FIXME: BUG HERE
                     _measurement.at<double>(0) = cntr.x;
                     _measurement.at<double>(1) = cntr.y;
                     _toy_prediction = _kalman.predict();
@@ -190,11 +191,13 @@ void MockTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_p
         logger->debug("draw contour");
     }
 
+    /*
     if (draw_prediction && _toy_radius > 0) {
+        // FIXME: Floating point exception: 8, (mocktracker.cpp:195)
         cv::Point c(_toy_prediction.at<float>(0), _toy_prediction.at<float>(0));
         cv::circle(_debug_frame, c, _toy_radius, cv::Scalar(255, 0, 0), 2);
         logger->debug("draw prediction");
-    }
+    }*/
 }
 
 

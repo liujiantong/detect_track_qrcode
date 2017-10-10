@@ -70,6 +70,7 @@ void SimpleCamera::update_camera() {
         if (!img_buf.empty()) {
             std::lock_guard<std::mutex> lg(v_mutex);
             img_buf.copyTo(_frame);
+            // logger->info("_frame.depth:{}", _frame.depth());
         } else {
             logger->error("img_buf empty!!!");
             _ret = false;

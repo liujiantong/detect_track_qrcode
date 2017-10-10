@@ -51,6 +51,8 @@ std::vector<std::vector<cv::Point> > ToyDetector::find_contours(cv::Mat& gray) {
 std::vector<std::string> ToyDetector::detect_color_from_contours(cv::Mat& img,
     std::vector<std::vector<cv::Point> >& cnts,
     std::vector<cv::Point>& out_cnt) {
+    auto logger = spd::get("console");
+    logger->debug("detect_color_from_contours img[{}, {}], depth:{}", img.cols, img.rows, img.depth());
 
     std::vector<std::vector<cv::Point>> square_cnts;
     for (auto cnt0 : cnts) {
@@ -67,6 +69,7 @@ std::vector<std::string> ToyDetector::detect_color_from_contours(cv::Mat& img,
 
     cv::Mat out_dst;
     std::vector<cv::Point> bound_cnt = check_cnt_contain(square_cnts);
+    logger->debug("bound_cnt.size:{}", bound_cnt.size());
     std::vector<std::string> colors = detect_color_in(img, bound_cnt, out_dst);
     // fill out_cnt
     out_cnt.assign(bound_cnt.begin(), bound_cnt.end());
@@ -76,7 +79,7 @@ std::vector<std::string> ToyDetector::detect_color_from_contours(cv::Mat& img,
 
 
 std::vector<std::string> ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst) {
-    // auto logger = spd::get("console");
+    auto logger = spd::get("console");
 
     std::vector<std::string> colors;
     cv::Point2f src_pnts[3], square_pnts[3];
@@ -89,12 +92,12 @@ std::vector<std::string> ToyDetector::detect_color_in(cv::Mat& img, std::vector<
     square_pnts[2] = cv::Point2f(_block_size, _block_size);
 
     cv::Rect r = cv::boundingRect(cnt);
-    out_dst.create(r.height, r.width, img.depth());
-    // logger->debug("img.dept: {}", img.depth());
+    out_dst.create(r.height, r.width, img.type());
+    logger->debug("img[{}, {}], type: {}", img.cols, img.rows, img.type());
 
     cv::Mat mtx = cv::getAffineTransform(src_pnts, square_pnts);
-    // FIXME: Assertion failed ((M0.type() == CV_32F || M0.type() == CV_64F) && M0.rows == 2 && M0.cols == 3)
-    cv::warpAffine(img, mtx, out_dst, cv::Size(r.width, r.height));
+    logger->debug("mtx(rows:{}, cols:{}), type:{}", mtx.rows, mtx.cols, mtx.type());
+    cv::warpAffine(img, out_dst, mtx, cv::Size(r.width, r.height));
     int half_block_size = _block_size / 2;
 
     cv::Mat roi1 = out_dst(cv::Rect(0, 0, half_block_size, half_block_size));
@@ -106,6 +109,8 @@ std::vector<std::string> ToyDetector::detect_color_in(cv::Mat& img, std::vector<
     colors.push_back(detect_color(roi2));
     colors.push_back(detect_color(roi3));
     colors.push_back(detect_color(roi4));
+
+    logger->debug("colors.size:{}", colors.size());
 
     int color_idx = -1;
     for (int i=0; i<colors.size(); i++) {
