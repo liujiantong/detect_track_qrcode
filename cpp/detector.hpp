@@ -8,7 +8,7 @@
 
 class ToyDetector {
 public:
-    ToyDetector(int block_size=160) : _block_size(block_size) {
+    ToyDetector(int block_size=100) : _block_size(block_size) {
     };
 
     std::vector<std::vector<cv::Point> > find_code_contours(cv::Mat& gray);

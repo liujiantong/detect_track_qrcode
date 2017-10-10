@@ -30,7 +30,7 @@ std::vector<std::vector<cv::Point> > ToyDetector::find_code_contours(cv::Mat& gr
     // cv::Vec4i hierarchy0 = hierarchy[0];
     for (int cnt_idx=0; cnt_idx<contours.size(); cnt_idx++) {
         double area = cv::contourArea(contours[cnt_idx], true);
-        if (area < 400) {
+        if (area < 100) {
             continue;
         }
 
@@ -67,9 +67,6 @@ std::vector<std::string> ToyDetector::detect_color_from_contours(cv::Mat& img,
         return colors;
     }
 
-    // FIXME:
-    // cv::imwrite("roi_color.png", img);
-
     cv::Mat out_dst;
     std::vector<cv::Point> bound_cnt = check_cnt_contain(square_cnts);
     std::vector<std::string> colors = detect_color_in(img, bound_cnt, out_dst);
@@ -94,10 +91,10 @@ std::vector<std::string> ToyDetector::detect_color_in(cv::Mat& img, std::vector<
     square_pnts[1] = cv::Point2f(_block_size, 0.0f );
     square_pnts[2] = cv::Point2f(_block_size, _block_size);
 
-    cv::Rect r = cv::boundingRect(cnt);
-    if (r.width < _block_size || r.height < _block_size) {
-        return colors;
-    }
+    // cv::Rect r = cv::boundingRect(cnt);
+    // if (r.width < _block_size || r.height < _block_size) {
+    //     return colors;
+    // }
 
     // out_dst.create(r.size(), img.type());
     out_dst.create(_block_size, _block_size, img.type());
