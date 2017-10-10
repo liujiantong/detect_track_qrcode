@@ -13,7 +13,6 @@ void MockTracker::init_tracker() {
 
     cv::Size size = _camera->get_frame_size();
     _frame_size = get_frame_size(size);
-    // logger->debug("_frame_size - w:{}, h:{}", _frame_size.width, _frame_size.height);
 
     // allocate _frame and _debug_image here
     _frame.create(_frame_size.height, _frame_size.width, CV_32F);
@@ -66,14 +65,13 @@ void MockTracker::init_tracker() {
 
     _fgbg = cv::createBackgroundSubtractorMOG2(300, 16, false);
     _wb = cv::xphoto::createSimpleWB();
-
-    logger->debug("init_tracker done.");
+    logger->info("init_tracker done.");
 }
 
 
 void MockTracker::track() {
     auto logger = spd::get("console");
-    logger->debug("tracker starting...");
+    logger->info("tracker starting...");
 
     _is_running = true;
 
@@ -82,34 +80,25 @@ void MockTracker::track() {
 
     while (true) {
         read_from_camera();
-        logger->debug("read_from_camera done");
 
         _frame.copyTo(_debug_frame);
-        logger->debug("_frame:[w:{},h:{}] copyTo _debug_frame done", _frame.cols, _frame.rows);
-
         cv::Rect united_rect = compute_fg_bound_rect(_frame, _frame_size, kernel);
-        logger->debug("united_rect: w:{}, h:{}", united_rect.width, united_rect.height);
 
         if (united_rect.width > 0) {
             _united_fg = united_rect;
             int roi_x = _united_fg.x, roi_y = _united_fg.y;
-            logger->debug("get roi_x:{} done", roi_x);
 
             cv::Mat roi_gray;
             cv::Mat roi_image = _frame(_united_fg);
             cv::cvtColor(roi_image, roi_gray, cv::COLOR_BGR2GRAY);
-            logger->debug("cvtColor done");
 
             std::vector<std::vector<cv::Point> > founds = detector.find_contours(roi_gray);
-            logger->debug("founds.size:{}", founds.size());
 
             if (!founds.empty()) {
                 _wb->balanceWhite(roi_image, roi_image);
-                logger->debug("balanceWhite done");
 
                 std::vector<cv::Point> cnt;
                 std::vector<std::string> colors = detector.detect_color_from_contours(roi_image, founds, cnt);
-                logger->debug("detect_color_from_contours cnt.size:{}", cnt.size());
 
                 if (!cnt.empty()) {
                     _toy_contour.clear();
@@ -119,7 +108,6 @@ void MockTracker::track() {
                     for (auto& p : _toy_contour) {
                         p += cv::Point(roi_x, roi_y);
                     }
-                    logger->debug("roi rect offset done.");
 
                     cv::Point cntr = pnts_center(_toy_contour);
 
@@ -133,7 +121,6 @@ void MockTracker::track() {
                     cv::Point2f c(cntr.x, cntr.y);
                     cv::minEnclosingCircle(cnt, c, _toy_radius);
                     add_new_tracker_point(cntr);
-                    logger->debug("add_new_tracker_point, cntr:[{},{}]", cntr.x, cntr.y);
                 }
             }
         } else {
@@ -163,7 +150,6 @@ void MockTracker::read_from_camera() {
     // concurrent frame write here.
     auto logger = spd::get("console");
 
-    // cv::Mat frm_buf(_frame_size.height, _frame_size.width, CV_32F);
     cv::Mat frm = _camera->read();
     if (frm.empty()) {
         logger->error("read_from_camera: frm empty");
@@ -172,7 +158,6 @@ void MockTracker::read_from_camera() {
 
     cv::resize(frm, _frame, _frame_size, cv::INTER_AREA);
     cv::flip(_frame, _frame, 1);
-    // logger->debug("-----> ToyTracker::read_from_camera done. _frame:[{}:{}]", _frame.cols, _frame.rows);
 }
 
 
@@ -182,13 +167,11 @@ void MockTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_p
 
     if (draw_fg && _united_fg.width > 0) {
         cv::rectangle(_debug_frame, _united_fg, cv::Scalar(0, 255, 0), 2);
-        logger->debug("draw fg");
     }
 
     if (draw_contour && !_toy_contour.empty()) {
         std::vector<std::vector<cv::Point> > cnts0 = {_toy_contour};
         cv::drawContours(_debug_frame, cnts0, 0, cv::Scalar(0, 0, 255), 2);
-        logger->debug("draw contour");
     }
 
     /*
@@ -203,21 +186,18 @@ void MockTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_p
 
 cv::Rect MockTracker::compute_fg_bound_rect(const cv::Mat& frm, cv::Size max_size, cv::Mat& kernel) {
     auto logger = spd::get("console");
-    logger->debug("compute_fg_bound_rect start. frm:[{}, {}]", frm.cols, frm.rows);
+    logger->debug("compute_fg_bound_rect start");
 
     cv::Mat fg_mask;
     _fgbg->apply(frm, fg_mask);
-    logger->debug("_fgbg apply done");
 
     cv::morphologyEx(fg_mask, fg_mask, cv::MORPH_OPEN, kernel);
     cv::morphologyEx(fg_mask, fg_mask, cv::MORPH_CLOSE, kernel);
     cv::threshold(fg_mask, fg_mask, 60, 255, cv::THRESH_BINARY);
-    logger->debug("fg_mask threshold done");
 
     std::vector<cv::Vec4i> hierarchy;
     std::vector<std::vector<cv::Point> > contours;
     cv::findContours(fg_mask, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-    logger->debug("fg_mask findContours done");
 
     std::vector<cv::Rect> boxes;
     for (std::vector<cv::Point> c : contours) {
@@ -225,14 +205,12 @@ cv::Rect MockTracker::compute_fg_bound_rect(const cv::Mat& frm, cv::Size max_siz
             boxes.push_back(cv::boundingRect(c));
         }
     }
-    logger->debug("filter boxes done. size:{}", boxes.size());
 
     if (boxes.empty()) {
         return cv::Rect(0, 0, -1, -1);
     }
 
     cv::Rect r = union_rects(boxes);
-    logger->debug("boxes union_rects done");
 
     int w = r.width;
     if (r.x + w > max_size.width) {

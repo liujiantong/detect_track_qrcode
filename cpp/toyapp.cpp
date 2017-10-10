@@ -35,8 +35,6 @@ void tracking_cb(MockTracker* tracker) {
     if (key == 27 || key == 'q' || key == 'Q') {
         tracker->stop_tracking();
     }
-
-    logger->debug("tracking_cb done.");
 }
 
 
@@ -49,8 +47,6 @@ int main(int argc, char const *argv[]) {
     // std::string video_src = "../../output.avi";
     SimpleCamera camera(video_src);
     camera.start_camera();
-
-    logger->debug("camera started");
 
     MockTracker tracker(&camera, 30, true);
     tracker.set_tracking_callback(&tracking_cb);
