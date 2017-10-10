@@ -99,7 +99,7 @@ void ToyTracker::track() {
             cv::cvtColor(roi_image, roi_gray, cv::COLOR_BGR2GRAY);
             logger->debug("cvtColor done");
 
-            // std::vector<std::vector<cv::Point> > founds = detector.find_contours(roi_gray);
+            // std::vector<std::vector<cv::Point> > founds = detector.find_code_contours(roi_gray);
             std::vector<std::vector<cv::Point> > founds;
             logger->debug("founds.size:{}", founds.size());
 

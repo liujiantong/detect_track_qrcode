@@ -14,7 +14,7 @@ const cv::Range GREEN_RANGE(30, 90);
 const cv::Range BLUE_RANGE(90, 140);
 
 
-std::vector<std::vector<cv::Point> > ToyDetector::find_contours(cv::Mat& gray) {
+std::vector<std::vector<cv::Point> > ToyDetector::find_code_contours(cv::Mat& gray) {
     cv::Mat blurred, edges;
     cv::medianBlur(gray, blurred, 3);
     cv::Canny(blurred, edges, 100, 120);
@@ -30,7 +30,7 @@ std::vector<std::vector<cv::Point> > ToyDetector::find_contours(cv::Mat& gray) {
     // cv::Vec4i hierarchy0 = hierarchy[0];
     for (int cnt_idx=0; cnt_idx<contours.size(); cnt_idx++) {
         double area = cv::contourArea(contours[cnt_idx], true);
-        if (area < 100) {
+        if (area < 400) {
             continue;
         }
 

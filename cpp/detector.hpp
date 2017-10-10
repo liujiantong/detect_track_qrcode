@@ -11,7 +11,7 @@ public:
     ToyDetector(int block_size=100) : _block_size(block_size) {
     };
 
-    std::vector<std::vector<cv::Point> > find_contours(cv::Mat& gray);
+    std::vector<std::vector<cv::Point> > find_code_contours(cv::Mat& gray);
     std::tuple<bool, std::vector<cv::Point> > detect_square(std::vector<cv::Point>& cnt);
     std::vector<std::string> detect_color_in(cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst);
     std::vector<std::string> detect_color_from_contours(cv::Mat& img,

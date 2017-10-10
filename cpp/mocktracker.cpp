@@ -92,7 +92,7 @@ void MockTracker::track() {
             cv::Mat roi_image = _frame(_united_fg);
             cv::cvtColor(roi_image, roi_gray, cv::COLOR_BGR2GRAY);
 
-            std::vector<std::vector<cv::Point> > founds = detector.find_contours(roi_gray);
+            std::vector<std::vector<cv::Point> > founds = detector.find_code_contours(roi_gray);
 
             if (!founds.empty()) {
                 _wb->balanceWhite(roi_image, roi_image);
