@@ -171,7 +171,7 @@ void ToyTracker::read_from_camera() {
     }
 
     cv::resize(frm, _frame, _frame_size, cv::INTER_AREA);
-    cv::flip(_frame, _frame, 1);
+    // cv::flip(_frame, _frame, 1);
     logger->debug("-----> ToyTracker::read_from_camera done. _frame:[{}:{}]", _frame.cols, _frame.rows);
 }
 

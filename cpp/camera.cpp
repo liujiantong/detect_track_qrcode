@@ -72,7 +72,7 @@ void SimpleCamera::update_camera() {
             img_buf.copyTo(_frame);
             // logger->info("_frame.depth:{}", _frame.depth());
         } else {
-            logger->error("img_buf empty!!!");
+            logger->warn("img_buf empty!!!");
             _ret = false;
         }
 

@@ -91,18 +91,16 @@ std::vector<std::string> ToyDetector::detect_color_in(cv::Mat& img, std::vector<
     square_pnts[1] = cv::Point2f(_block_size, 0.0f );
     square_pnts[2] = cv::Point2f(_block_size, _block_size);
 
-    // cv::Rect r = cv::boundingRect(cnt);
-    // if (r.width < _block_size || r.height < _block_size) {
-    //     return colors;
-    // }
+    int half_block_size = _block_size / 2;
+    cv::Rect r = cv::boundingRect(cnt);
+    if (r.width < half_block_size || r.height < half_block_size) {
+        return colors;
+    }
 
-    // out_dst.create(r.size(), img.type());
     out_dst.create(_block_size, _block_size, img.type());
 
     cv::Mat mtx = cv::getAffineTransform(src_pnts, square_pnts);
-    // cv::warpAffine(img, out_dst, mtx, cv::Size(r.width, r.height));
     cv::warpAffine(img, out_dst, mtx, cv::Size(_block_size, _block_size));
-    int half_block_size = _block_size / 2;
 
     cv::Mat roi1 = out_dst(cv::Rect(0, 0, half_block_size, half_block_size));
     cv::Mat roi2 = out_dst(cv::Rect(half_block_size, 0, half_block_size, half_block_size));
