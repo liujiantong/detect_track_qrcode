@@ -17,7 +17,7 @@ namespace spd = spdlog;
 
 std::string join(std::vector<std::string>& v) {
     std::ostringstream imploded;
-    std::copy(v.begin(), v.end(), std::ostream_iterator<std::string>(imploded, ","));
+    std::copy(v.begin(), v.end(), std::ostream_iterator<std::string>(imploded, " "));
     return imploded.str();
 }
 
@@ -27,11 +27,11 @@ void tracking_cb(MockTracker* tracker) {
     cv::Mat* debug_frame = tracker->get_debug_frame();
     // cv::Point toy_center = tracker->get_last_toy_center();
     auto colors = tracker->get_toy_colors();
-    logger->debug("toy colors:{}", join(colors));
+    logger->info("toy colors:[{}]", join(colors));
 
     cv::imshow("debug frame", *debug_frame);
 
-    char key = (char)cv::waitKey(1);
+    char key = (char)cv::waitKey(3);
     if (key == 27 || key == 'q' || key == 'Q') {
         tracker->stop_tracking();
     }
@@ -43,8 +43,8 @@ int main(int argc, char const *argv[]) {
     logger->set_level(spd::level::debug);
     logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] %v");
 
-    std::string video_src = "0";
-    // std::string video_src = "../../output.avi";
+    // std::string video_src = "0";
+    std::string video_src = "../../output.avi";
     SimpleCamera camera(video_src);
     camera.start_camera();
 
