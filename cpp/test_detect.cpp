@@ -14,6 +14,7 @@ const cv::Range GREEN_RANGE(30, 90);
 const cv::Range BLUE_RANGE(90, 140);
 
 
+#if 0
 void calc_color(cv::Mat& img) {
     auto logger = spd::get("console");
 
@@ -35,6 +36,7 @@ void calc_color(cv::Mat& img) {
 
     logger->info("r:{}, g:{}, b:{}", rval, gval, bval);
 }
+#endif
 
 
 int main(int argc, char const *argv[]) {
@@ -44,7 +46,7 @@ int main(int argc, char const *argv[]) {
 
     cv::Mat gray;
     cv::Mat image = cv::imread("/Users/liutao/mywork/detect_track_qrcode/image/pic01.jpg");
-    cv::Mat roi3 = cv::imread("roi3.png");
+    // cv::Mat roi3 = cv::imread("roi3.png");
 
     cv::Size size = get_frame_size(cv::Size(image.cols, image.rows), 800);
     cv::resize(image, image, size, cv::INTER_AREA);
@@ -57,9 +59,10 @@ int main(int argc, char const *argv[]) {
     std::vector<std::vector<cv::Point> > founds = detector.find_code_contours(gray);
     logger->debug("founds.size:{}", founds.size());
 
+    /*
     auto color = detector.detect_color(roi3);
     logger->info("color in roi3:{}", color);
-    calc_color(roi3);
+    calc_color(roi3);*/
 
     if (!founds.empty()) {
         auto wb = cv::xphoto::createSimpleWB();
