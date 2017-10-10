@@ -52,7 +52,7 @@ double angle_cos(cv::Point pt0, cv::Point pt1, cv::Point pt2) {
 double sum_histogram(cv::Mat& hist, const cv::Range& range) {
     double sum = 0;
     for (int i=range.start; i<range.end; i++) {
-        sum += cvRound(hist.at<float>(i));
+        sum += hist.at<float>(i);
     }
     return sum;
 }
