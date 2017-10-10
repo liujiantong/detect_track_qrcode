@@ -97,7 +97,7 @@ class ToyTracker(object):
                 roi_image = self._frame[roi_y:roi_y + roi_h, roi_x:roi_x + roi_w]
                 roi_gray = cv2.cvtColor(roi_image, cv2.COLOR_BGR2GRAY)
 
-                founds = detector.find_contours(roi_gray)
+                founds = detector.find_code_contours(roi_gray)
                 if founds:
                     roi_image = wb.balanceWhite(roi_image)
                     colors, cnt = detector.detect_color_from_contours(roi_image, founds)

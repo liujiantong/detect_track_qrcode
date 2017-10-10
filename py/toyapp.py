@@ -24,8 +24,8 @@ def tracking_callback():
 
 
 if __name__ == "__main__":
-    cam = SimpleCamera(video_src=0)
-    # cam = SimpleCamera(video_src='../output.avi')
+    # cam = SimpleCamera(video_src=0)
+    cam = SimpleCamera(video_src='../output.avi')
     cam.start_camera()
 
     tracker = ToyTracker(camera=cam, max_nb_of_centers=10)

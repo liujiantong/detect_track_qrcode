@@ -23,7 +23,7 @@ class ToyDetector(object):
         self._block_size = block_size
 
     @staticmethod
-    def find_contours(gray):
+    def find_code_contours(gray):
         blurred = cv2.medianBlur(gray, 3)
         edges = cv2.Canny(blurred, 100, 120)
 
