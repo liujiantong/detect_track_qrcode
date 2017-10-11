@@ -11,7 +11,7 @@
 namespace spd = spdlog;
 
 void SimpleCamera::start_camera() {
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
     logger->info("start camera");
 
     bool ret = init_camera();
@@ -30,7 +30,7 @@ void SimpleCamera::start_camera() {
 
 
 bool SimpleCamera::init_camera() {
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
 
     if (!_cam.isOpened()) {
         logger->error("Failed to open the video device or video file!");
@@ -62,7 +62,7 @@ bool SimpleCamera::init_camera() {
 
 
 void SimpleCamera::update_camera() {
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
 
     while (_is_running) {
         cv::Mat img_buf;

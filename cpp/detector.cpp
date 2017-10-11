@@ -52,7 +52,7 @@ std::vector<std::string> ToyDetector::detect_color_from_contours(cv::Mat& img,
     std::vector<std::vector<cv::Point> >& cnts,
     std::vector<cv::Point>& out_cnt) {
 
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
     std::vector<std::vector<cv::Point>> square_cnts;
     for (auto cnt0 : cnts) {
         std::tuple<bool, std::vector<cv::Point> > result = detect_square(cnt0);
@@ -79,7 +79,7 @@ std::vector<std::string> ToyDetector::detect_color_from_contours(cv::Mat& img,
 
 
 std::vector<std::string> ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst) {
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
 
     std::vector<std::string> colors;
     cv::Point2f src_pnts[3], square_pnts[3];
@@ -169,7 +169,7 @@ std::tuple<bool, std::vector<cv::Point> > ToyDetector::detect_square(std::vector
 
 
 std::string ToyDetector::detect_color(cv::Mat& roi) {
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
 
     cv::Mat hsv, mask, white_mask, hist;
     cv::cvtColor(roi, hsv, cv::COLOR_BGR2HSV);

@@ -15,7 +15,7 @@ using namespace cv;
 namespace spd = spdlog;
 
 void help(const char** av) {
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
     logger->info("The program captures frames from a video file, image sequence (01.jpg, 02.jpg ... 10.jpg) or camera connected to your computer.\n"
                  "Usage:\n{0} <video file, image sequence or device number>\n"
                  "q,Q,esc -- quit\n"
@@ -30,7 +30,7 @@ void help(const char** av) {
 
 
 int main(int argc, char const *argv[]) {
-    auto logger = spd::stdout_color_mt("console");
+    auto logger = spd::stdout_color_mt("toy");
 
     cv::CommandLineParser parser(argc, argv, "{help h||}{@input||}");
     if (parser.has("help")) {

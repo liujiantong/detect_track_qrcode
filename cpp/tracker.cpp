@@ -9,7 +9,7 @@
 namespace spd = spdlog;
 
 void ToyTracker::init_tracker() {
-    // auto logger = spd::get("console");
+    // auto logger = spd::get("toy");
 
     cv::Size size = _camera->get_frame_size();
     // logger->debug("size from camera - w:{}, h{}", size.width, size.height);
@@ -70,7 +70,7 @@ void ToyTracker::init_tracker() {
 
 
 void ToyTracker::track() {
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
     logger->debug("tracker starting...");
 
     _is_running = true;
@@ -158,7 +158,7 @@ void ToyTracker::track() {
 
 void ToyTracker::read_from_camera() {
     // FIXME: concurrent frame write here.
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
 
     // cv::Mat frm_buf(_frame_size.height, _frame_size.width, CV_32F);
     // FIXME: frm empty here
@@ -177,7 +177,7 @@ void ToyTracker::read_from_camera() {
 
 
 void ToyTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_prediction) {
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
     logger->debug("draw_debug_things");
 
     if (draw_fg && _united_fg.width > 0) {
@@ -201,7 +201,7 @@ void ToyTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_pr
 
 cv::Rect ToyTracker::compute_fg_bound_rect(const cv::Mat& frm, cv::Size max_size, cv::Mat& kernel) {
 // cv::Rect ToyTracker::compute_fg_bound_rect(const cv::Mat frm, cv::Size max_size, cv::Mat& kernel) {
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
     logger->debug("compute_fg_bound_rect start. frm:[{}, {}]", frm.cols, frm.rows);
 
     cv::Mat fg_mask;

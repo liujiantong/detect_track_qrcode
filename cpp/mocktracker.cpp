@@ -9,7 +9,7 @@
 namespace spd = spdlog;
 
 void MockTracker::init_tracker() {
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
 
     cv::Size size = _camera->get_frame_size();
     _frame_size = get_frame_size(size);
@@ -70,7 +70,7 @@ void MockTracker::init_tracker() {
 
 
 void MockTracker::track() {
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
     logger->info("tracker starting...");
 
     _is_running = true;
@@ -148,7 +148,7 @@ void MockTracker::track() {
 
 void MockTracker::read_from_camera() {
     // concurrent frame write here.
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
 
     cv::Mat frm = _camera->read();
     if (frm.empty()) {
@@ -162,7 +162,7 @@ void MockTracker::read_from_camera() {
 
 
 void MockTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_prediction) {
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
     logger->debug("draw_debug_things");
 
     if (draw_fg && _united_fg.width > 0) {
@@ -185,7 +185,7 @@ void MockTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_p
 
 
 cv::Rect MockTracker::compute_fg_bound_rect(const cv::Mat& frm, cv::Size max_size, cv::Mat& kernel) {
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
     logger->debug("compute_fg_bound_rect start");
 
     cv::Mat fg_mask;
@@ -225,7 +225,7 @@ cv::Rect MockTracker::compute_fg_bound_rect(const cv::Mat& frm, cv::Size max_siz
 }
 
 void MockTracker::add_new_tracker_point(cv::Point pnt, int min_distance, int max_distance) {
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
     logger->debug("add_new_tracker_point start...");
 
     if (_tracker_centers.empty()) {

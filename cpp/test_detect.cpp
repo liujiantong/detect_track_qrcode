@@ -16,7 +16,7 @@ const cv::Range BLUE_RANGE(90, 140);
 
 #if 0
 void calc_color(cv::Mat& img) {
-    auto logger = spd::get("console");
+    auto logger = spd::get("toy");
 
     cv::Mat hsv, mask, hist;
     cv::cvtColor(img, hsv, cv::COLOR_BGR2HSV);
@@ -40,7 +40,7 @@ void calc_color(cv::Mat& img) {
 
 
 int main(int argc, char const *argv[]) {
-    auto logger = spd::stdout_color_mt("console");
+    auto logger = spd::stdout_color_mt("toy");
     logger->set_level(spd::level::debug);
     logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] %v");
 
