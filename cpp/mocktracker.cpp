@@ -41,7 +41,6 @@ void MockTracker::init_kalman() {
     [0, 0, 1, 0]
     [0, 0, 0, 1]
     */
-    float dt = 0.045; // time between measurements (1/FPS)
     _kalman.transitionMatrix = (cv::Mat_<float>(4, 4) << 1,0,1,0,  0,1,0,1,  0,0,1,0,  0,0,0,1);
 
     /* MEASUREMENT MODEL
@@ -51,11 +50,12 @@ void MockTracker::init_kalman() {
     cv::setIdentity(_kalman.measurementMatrix);
 
     /*
-    [1, 0, 0, 0]
-    [0, 1, 0, 0]
-    [0, 0, 1, 0]
-    [0, 0, 0, 1]
+    [dt, 0, 0, 0]
+    [0, dt, 0, 0]
+    [0, 0, dt, 0]
+    [0, 0, 0, dt]
     */
+    float dt = 0.045; // time between measurements (1/FPS)
     cv::setIdentity(_kalman.processNoiseCov, cv::Scalar::all(dt));
     cv::setIdentity(_kalman.measurementNoiseCov, cv::Scalar::all(dt));
     // cv::setIdentity(_kalman.errorCovPost, cv::Scalar::all(dt));
