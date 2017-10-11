@@ -200,20 +200,17 @@ std::string ToyDetector::detect_color(cv::Mat& roi) {
     double bval = sum_histogram(hist, BLUE_RANGE);
 
     // find max value
-    std::string colors[] = {"red", "green", "blue"};
-    double max_val = std::max({rval, gval, bval});
-
-    int pos = -1;
-    double vals[] = {rval, gval, bval};
-    for (int i=0; i<3; i++) {
-        // logger->debug("{}:{}", colors[i], vals[i]);
-        if (vals[i] == max_val) {
-            pos = i;
-        }
-    }
-
-    if (max_val > 0.8) {
-        return colors[pos];
+    std::vector<std::tuple<std::string, double> > tups = {
+        {"red", rval}, {"green", gval}, {"blue", bval}
+    };
+    auto max_tup = *std::max_element(tups.begin(), tups.end(),
+                                     [](const std::tuple<std::string, double>& t1,
+                                        const std::tuple<std::string, double>& t2) -> bool {
+                                        return std::get<1>(t1) < std::get<1>(t2);
+                                    });
+    double max_val = std::get<1>(max_tup);
+    if (max_val > 1.0f) {
+        return std::get<0>(max_tup);
     }
     return "unknown";
 }
