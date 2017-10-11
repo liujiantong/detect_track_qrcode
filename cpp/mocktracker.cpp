@@ -3,6 +3,8 @@
 #include "helper.hpp"
 #include "spdlog/spdlog.h"
 
+#include <opencv2/core.hpp>
+#include <iostream>
 #include <chrono>
 
 
@@ -18,30 +20,35 @@ void MockTracker::init_tracker() {
     _frame.create(_frame_size.height, _frame_size.width, CV_32F);
     _debug_frame.create(_frame_size.height, _frame_size.width, CV_32F);
 
+    init_kalman();
+    _fgbg = cv::createBackgroundSubtractorMOG2(300, 16, false);
+    _wb = cv::xphoto::createSimpleWB();
+    logger->info("init_tracker done.");
+}
+
+
+void MockTracker::init_kalman() {
+    auto logger = spd::get("toy");
+    logger->debug("init_kalman start");
+
     int n_states = 4, n_measurements = 2;
     _kalman.init(n_states, n_measurements);
-    logger->debug("_kalman inited");
 
-    // FIXME: BUG HERE
+    // FIXME:BUG HERE
     /* DYNAMIC MODEL
     [1, 0, 1, 0]
     [0, 1, 0, 1]
     [0, 0, 1, 0]
     [0, 0, 0, 1]
     */
-    int dt = 1;
-    cv::setIdentity(_kalman.transitionMatrix, cv::Scalar(1));
-    _kalman.transitionMatrix.at<double>(0, 2) = dt;
-    _kalman.transitionMatrix.at<double>(1, 3) = dt;
+    float dt = 0.03;
+    _kalman.transitionMatrix = (cv::Mat_<float>(4, 4) << 1,0,1,0,  0,1,0,1,  0,0,1,0,  0,0,0,1);
 
     /* MEASUREMENT MODEL
     [1, 0, 0, 0]
     [0, 1, 0, 0]
     */
-    _kalman.measurementMatrix = cv::Mat::zeros(2, 4, CV_32F);
-    _kalman.measurementMatrix.at<double>(0, 0) = 1;  // x
-    _kalman.measurementMatrix.at<double>(1, 1) = 1;  // y
-    //*/
+    cv::setIdentity(_kalman.measurementMatrix);
 
     /*
     [1, 0, 0, 0]
@@ -49,15 +56,12 @@ void MockTracker::init_tracker() {
     [0, 0, 1, 0]
     [0, 0, 0, 1]
     */
-    cv::setIdentity(_kalman.processNoiseCov, cv::Scalar(0.03f));
+    cv::setIdentity(_kalman.processNoiseCov, cv::Scalar::all(dt));
+    cv::setIdentity(_kalman.measurementNoiseCov, cv::Scalar::all(0.1));
+    cv::setIdentity(_kalman.errorCovPost, cv::Scalar::all(0.1));
 
     _measurement = cv::Mat::zeros(n_measurements, 1, CV_32F);
-    _toy_prediction = cv::Mat::zeros(n_measurements, 1, CV_32F);
-    logger->debug("_kalman params ready");
-
-    _fgbg = cv::createBackgroundSubtractorMOG2(300, 16, false);
-    _wb = cv::xphoto::createSimpleWB();
-    logger->info("init_tracker done.");
+    _toy_prediction = cv::Mat::zeros(4, 1, CV_32F);
 }
 
 
@@ -102,15 +106,16 @@ void MockTracker::track() {
                     }
 
                     cv::Point cntr = pnts_center(_toy_contour);
+                    _measurement.at<float>(0) = cntr.x;
+                    _measurement.at<float>(1) = cntr.y;
+                    _kalman.correct(_measurement);
+                    logger->info("measurement: ({}, {})", cntr.x, cntr.y);
 
-                    /* FIXME: BUG HERE */
-                    _measurement.at<double>(0) = cntr.x;
-                    _measurement.at<double>(1) = cntr.y;
                     _toy_prediction = _kalman.predict();
-                    logger->debug("kalman predicted");
-                    //*/
+                    // std::cout << "_toy_prediction:" << cv::format(_toy_prediction, cv::Formatter::FMT_NUMPY) << std::endl;
+                    logger->info("toy_prediction: ({}, {})", _toy_prediction.at<float>(0), _toy_prediction.at<float>(1));
 
-                    cv::Point2f c(cntr.x, cntr.y);
+                    cv::Point2f c;
                     cv::minEnclosingCircle(cnt, c, _toy_radius);
                     add_new_tracker_point(cntr);
                 }
@@ -166,13 +171,12 @@ void MockTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_p
         cv::drawContours(_debug_frame, cnts0, 0, cv::Scalar(0, 0, 255), 2);
     }
 
-    /*
     if (draw_prediction && _toy_radius > 0) {
         // FIXME: Floating point exception: 8, (mocktracker.cpp:195)
-        cv::Point c(_toy_prediction.at<float>(0), _toy_prediction.at<float>(0));
+        cv::Point c(_toy_prediction.at<float>(0), _toy_prediction.at<float>(1));
         cv::circle(_debug_frame, c, _toy_radius, cv::Scalar(255, 0, 0), 2);
         logger->debug("draw prediction");
-    }*/
+    }
 }
 
 

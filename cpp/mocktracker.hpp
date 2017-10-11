@@ -75,6 +75,7 @@ private:
     cv::Ptr<cv::BackgroundSubtractorMOG2> _fgbg;
     cv::Ptr<cv::xphoto::SimpleWB> _wb;
 
+    void init_kalman();
     void init_tracker();
     void read_from_camera();
 
