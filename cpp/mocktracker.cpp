@@ -10,6 +10,10 @@
 
 namespace spd = spdlog;
 
+int hsize = 16;
+float hranges[] = {0, 180};
+const float* phranges = hranges;
+
 void MockTracker::init_tracker() {
     auto logger = spd::get("toy");
 
@@ -155,6 +159,24 @@ void MockTracker::read_from_camera() {
 
     cv::resize(frm, _frame, _frame_size, cv::INTER_AREA);
     // cv::flip(_frame, _frame, 1);
+}
+
+
+void MockTracker::calc_hist(cv::Mat& roi, cv::Mat& roi_mask) {
+    calcHist(&roi, 1, 0, roi_mask, _toy_hist, 1, &hsize, &phranges);
+    normalize(_toy_hist, _toy_hist, 0, 180, cv::NORM_MINMAX);
+}
+
+
+void MockTracker::camshift(cv::Mat& hue, cv::Mat& mask, cv::Rect track_window) {
+    cv::Mat backproj;
+    cv::calcBackProject(&hue, 1, 0, _toy_hist, backproj, &phranges);
+    backproj &= mask;
+    cv::RotatedRect track_box = cv::CamShift(backproj, track_window, cv::TermCriteria(
+                                             cv::TermCriteria::EPS | cv::TermCriteria::COUNT, 10, 1 ));
+    if( track_window.area() <= 1 ) {
+        // TODO:
+    }
 }
 
 
