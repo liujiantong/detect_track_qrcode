@@ -41,6 +41,7 @@ void calc_color(cv::Mat& img) {
 
 int main(int argc, char const *argv[]) {
     auto logger = spd::stdout_color_mt("toy");
+    // auto logger = spd::daily_logger_mt("toy", "toy.log", 0, 0);
     logger->set_level(spd::level::debug);
     logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] %v");
 

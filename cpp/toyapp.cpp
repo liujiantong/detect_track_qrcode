@@ -14,7 +14,6 @@
 
 namespace spd = spdlog;
 
-
 std::string join(std::vector<std::string>& v) {
     std::ostringstream imploded;
     std::copy(v.begin(), v.end(), std::ostream_iterator<std::string>(imploded, " "));
@@ -40,6 +39,7 @@ void tracking_cb(MockTracker* tracker) {
 
 int main(int argc, char const *argv[]) {
     auto logger = spd::stdout_color_mt("toy");
+    // auto logger = spd::daily_logger_mt("toy", "toy.log", 0, 0);
     logger->set_level(spd::level::info);
     logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] %v");
 
