@@ -28,40 +28,32 @@ void MockTracker::init_tracker() {
     [0, 1, 0, 1]
     [0, 0, 1, 0]
     [0, 0, 0, 1]
-    *
-    int dt = 1;
-    _kalman.transitionMatrix.at<double>(0, 0) = dt;
-    _kalman.transitionMatrix.at<double>(0, 2) = dt;
-    _kalman.transitionMatrix.at<double>(1, 1) = dt;
-    _kalman.transitionMatrix.at<double>(1, 3) = dt;
-    _kalman.transitionMatrix.at<double>(2, 2) = dt;
-    _kalman.transitionMatrix.at<double>(3, 3) = dt;
     */
+    int dt = 1;
+    cv::setIdentity(_kalman.transitionMatrix, cv::Scalar(1));
+    _kalman.transitionMatrix.at<double>(0, 2) = dt;
+    _kalman.transitionMatrix.at<double>(1, 3) = dt;
 
     /* MEASUREMENT MODEL
     [1, 0, 0, 0]
     [0, 1, 0, 0]
-    *
+    */
+    _kalman.measurementMatrix = cv::Mat::zeros(2, 4, CV_32F);
     _kalman.measurementMatrix.at<double>(0, 0) = 1;  // x
     _kalman.measurementMatrix.at<double>(1, 1) = 1;  // y
-    */
+    //*/
 
     /*
     [1, 0, 0, 0]
     [0, 1, 0, 0]
     [0, 0, 1, 0]
     [0, 0, 0, 1]
-    *
-    float cov = 0.03f;
-    _kalman.processNoiseCov.at<double>(0, 0) = cov;
-    _kalman.processNoiseCov.at<double>(1, 1) = cov;
-    _kalman.processNoiseCov.at<double>(2, 2) = cov;
-    _kalman.processNoiseCov.at<double>(3, 3) = cov;
     */
+    cv::setIdentity(_kalman.processNoiseCov, cv::Scalar(0.03f));
 
-    _measurement.create(n_measurements, 1, CV_32F);
-    _toy_prediction.create(n_measurements, 1, CV_32F);
-    // logger->debug("_kalman params ready");
+    _measurement = cv::Mat::zeros(n_measurements, 1, CV_32F);
+    _toy_prediction = cv::Mat::zeros(n_measurements, 1, CV_32F);
+    logger->debug("_kalman params ready");
 
     _fgbg = cv::createBackgroundSubtractorMOG2(300, 16, false);
     _wb = cv::xphoto::createSimpleWB();
@@ -111,12 +103,12 @@ void MockTracker::track() {
 
                     cv::Point cntr = pnts_center(_toy_contour);
 
-                    /* FIXME: BUG HERE
+                    /* FIXME: BUG HERE */
                     _measurement.at<double>(0) = cntr.x;
                     _measurement.at<double>(1) = cntr.y;
                     _toy_prediction = _kalman.predict();
                     logger->debug("kalman predicted");
-                    */
+                    //*/
 
                     cv::Point2f c(cntr.x, cntr.y);
                     cv::minEnclosingCircle(cnt, c, _toy_radius);
