@@ -69,6 +69,16 @@ void MockTracker::init_kalman() {
 }
 
 
+void MockTracker::kalman_track(cv::Point cntr) {
+    auto logger = spd::get("toy");
+    // cv::Point cntr = pnts_center(_toy_contour);
+    _measurement.at<float>(0) = cntr.x;
+    _measurement.at<float>(1) = cntr.y;
+    _kalman.correct(_measurement);
+    logger->info("measurement: ({}, {})", cntr.x, cntr.y);
+}
+
+
 void MockTracker::track() {
     auto logger = spd::get("toy");
     logger->info("tracker starting...");
@@ -110,10 +120,7 @@ void MockTracker::track() {
                     }
 
                     cv::Point cntr = pnts_center(_toy_contour);
-                    _measurement.at<float>(0) = cntr.x;
-                    _measurement.at<float>(1) = cntr.y;
-                    _kalman.correct(_measurement);
-                    logger->info("measurement: ({}, {})", cntr.x, cntr.y);
+                    kalman_track(cntr);
 
                     _toy_prediction = _kalman.predict();
                     // std::cout << "_toy_prediction:" << cv::format(_toy_prediction, cv::Formatter::FMT_NUMPY) << std::endl;

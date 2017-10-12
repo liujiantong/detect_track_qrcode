@@ -77,12 +77,15 @@ private:
     cv::Ptr<cv::BackgroundSubtractorMOG2> _fgbg;
     cv::Ptr<cv::xphoto::SimpleWB> _wb;
 
-    void init_kalman();
     void init_tracker();
     void read_from_camera();
 
+    void init_kalman();
+    void kalman_track(cv::Point cntr);
+
     void calc_hist(cv::Mat& roi, cv::Mat& roi_mask);
     void camshift(cv::Mat& hue, cv::Mat& mask, cv::Rect track_window);
+    void camshift_track();
 
     void add_new_tracker_point(cv::Point pnt, int min_distance=20, int max_distance=1000);
     // cv::Rect compute_fg_bound_rect(const cv::Mat frm, cv::Size max_size, cv::Mat& kernel);
