@@ -122,11 +122,8 @@ void MockTracker::track() {
                     }
 
                     _track_window = cv::boundingRect(_toy_contour);
-                    logger->info("_track_window: ({}, {}, {}, {})",
-                                  _track_window.x, _track_window.y, _track_window.width, _track_window.height);
                     cv::Mat hsv;
                     cv::cvtColor(_frame, hsv, CV_BGR2HSV);
-                    logger->info("hsv ready for calc_hist");
                     calc_hist(hsv, _track_window);
                     cv::Point cntr = pnts_center(_toy_contour);
                     // kalman_track(cntr);
@@ -187,29 +184,20 @@ void MockTracker::read_from_camera() {
 
 void MockTracker::calc_hist(cv::Mat& hsv, cv::Rect roi_rect) {
     auto logger = spd::get("toy");
-    logger->info("calc_hist start");
 
     cv::Mat mask;
-    cv::Mat roi = hsv(roi_rect);
-    logger->info("calc_hist roi ready");
-
-    cv::inRange(roi, cv::Scalar(0, 20, 0), cv::Scalar(180, 255, 255), mask);
-    logger->info("calc_hist mask ready");
-
     int channels[] = {0};
-    // cv::calcHist(&hsv, 1, channels, mask, hist, 1, &hsize, ranges, true);
+
+    cv::Mat roi = hsv(roi_rect);
+    cv::inRange(roi, cv::Scalar(0, 20, 0), cv::Scalar(180, 255, 255), mask);
+    
     cv::calcHist(&roi, 1, channels, mask, _toy_hist, 1, &hsize, &phranges);
-    logger->info("calc_hist calcHist ready");
     normalize(_toy_hist, _toy_hist, 0, 180, cv::NORM_MINMAX);
     logger->info("calc_hist calcHist done");
 }
 
 
 cv::Rect MockTracker::camshift_track(cv::Mat& hsv, cv::Mat& mask, cv::Rect track_window) {
-    // calcBackProject(&hue, 1, 0, hist, backproj, &phranges);
-    // backproj &= mask;
-
-
     cv::Mat hue, backproj;
     hue.create(hsv.size(), hsv.depth());
     int ch[] = {0, 0};
