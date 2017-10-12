@@ -24,7 +24,7 @@ void MockTracker::init_tracker() {
     _frame.create(_frame_size.height, _frame_size.width, CV_32F);
     _debug_frame.create(_frame_size.height, _frame_size.width, CV_32F);
 
-    init_kalman();
+    // init_kalman();
     _fgbg = cv::createBackgroundSubtractorMOG2(300, 16, false);
     _wb = cv::xphoto::createSimpleWB();
     logger->info("init_tracker done.");
@@ -64,6 +64,7 @@ void MockTracker::init_kalman() {
     cv::setIdentity(_kalman.measurementNoiseCov, cv::Scalar::all(dt));
     // cv::setIdentity(_kalman.errorCovPost, cv::Scalar::all(dt));
 
+    kalman_inited = true;
     _measurement = cv::Mat::zeros(n_measurements, 1, CV_32F);
     _toy_prediction = cv::Mat::zeros(4, 1, CV_32F);
 }
@@ -120,11 +121,10 @@ void MockTracker::track() {
                     }
 
                     cv::Point cntr = pnts_center(_toy_contour);
-                    kalman_track(cntr);
-
-                    _toy_prediction = _kalman.predict();
+                    // kalman_track(cntr);
+                    // _toy_prediction = _kalman.predict();
                     // std::cout << "_toy_prediction:" << cv::format(_toy_prediction, cv::Formatter::FMT_NUMPY) << std::endl;
-                    logger->info("toy_prediction: ({}, {})", _toy_prediction.at<float>(0), _toy_prediction.at<float>(1));
+                    // logger->info("toy_prediction: ({}, {})", _toy_prediction.at<float>(0), _toy_prediction.at<float>(1));
 
                     cv::Point2f c;
                     cv::minEnclosingCircle(cnt, c, _toy_radius);
@@ -175,7 +175,7 @@ void MockTracker::calc_hist(cv::Mat& roi, cv::Mat& roi_mask) {
 }
 
 
-void MockTracker::camshift_track(cv::Mat& hue, cv::Mat& mask, cv::Rect track_window) {
+cv::Rect MockTracker::camshift_track(cv::Mat& hue, cv::Mat& mask, cv::Rect track_window) {
     cv::Mat backproj;
     cv::calcBackProject(&hue, 1, 0, _toy_hist, backproj, &phranges);
     backproj &= mask;
@@ -187,6 +187,8 @@ void MockTracker::camshift_track(cv::Mat& hue, cv::Mat& mask, cv::Rect track_win
                                 track_window.x + r, track_window.y + r) &
                        cv::Rect(0, 0, cols, rows);
     }
+    _track_window = track_box.boundingRect();
+    return _track_window;
 }
 
 
@@ -203,7 +205,7 @@ void MockTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_p
         cv::drawContours(_debug_frame, cnts0, 0, cv::Scalar(0, 0, 255), 2);
     }
 
-    if (draw_prediction && _toy_radius > 0) {
+    if (kalman_inited && draw_prediction && _toy_radius > 0) {
         // FIXME: Floating point exception: 8, (mocktracker.cpp:195)
         cv::Point c(_toy_prediction.at<float>(0), _toy_prediction.at<float>(1));
         cv::circle(_debug_frame, c, _toy_radius, cv::Scalar(255, 0, 0), 2);
