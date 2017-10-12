@@ -14,6 +14,7 @@ int hsize = 16;
 float hranges[] = {0, 180};
 const float* phranges = hranges;
 
+
 void MockTracker::init_tracker() {
     auto logger = spd::get("toy");
 
@@ -64,7 +65,6 @@ void MockTracker::init_kalman() {
     cv::setIdentity(_kalman.measurementNoiseCov, cv::Scalar::all(dt));
     // cv::setIdentity(_kalman.errorCovPost, cv::Scalar::all(dt));
 
-    kalman_inited = true;
     _measurement = cv::Mat::zeros(n_measurements, 1, CV_32F);
     _toy_prediction = cv::Mat::zeros(4, 1, CV_32F);
 }
@@ -72,7 +72,8 @@ void MockTracker::init_kalman() {
 
 void MockTracker::kalman_track(cv::Point cntr) {
     auto logger = spd::get("toy");
-    // cv::Point cntr = pnts_center(_toy_contour);
+
+    kalman_tracked = true;
     _measurement.at<float>(0) = cntr.x;
     _measurement.at<float>(1) = cntr.y;
     _kalman.correct(_measurement);
@@ -205,7 +206,7 @@ void MockTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_p
         cv::drawContours(_debug_frame, cnts0, 0, cv::Scalar(0, 0, 255), 2);
     }
 
-    if (kalman_inited && draw_prediction && _toy_radius > 0) {
+    if (kalman_tracked && draw_prediction && _toy_radius > 0) {
         // FIXME: Floating point exception: 8, (mocktracker.cpp:195)
         cv::Point c(_toy_prediction.at<float>(0), _toy_prediction.at<float>(1));
         cv::circle(_debug_frame, c, _toy_radius, cv::Scalar(255, 0, 0), 2);

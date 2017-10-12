@@ -17,7 +17,7 @@ class MockTracker {
 
 public:
     MockTracker(SimpleCamera* cam, int nb_of_cntr=30, bool debug=false) : _camera(cam),
-    _max_nb_of_centers(nb_of_cntr), _debug(debug), kalman_inited(false) {
+    _max_nb_of_centers(nb_of_cntr), _debug(debug), kalman_tracked(false) {
         _tracking_cb = nullptr;
         _united_fg = cv::Rect(0, 0, -1, -1);
         init_tracker();
@@ -71,7 +71,7 @@ private:
     cv::Mat _measurement;
     cv::Mat _toy_prediction;
 
-    bool kalman_inited;
+    bool kalman_tracked;
     cv::Mat _toy_hist;
     cv::Rect _track_window;
 
