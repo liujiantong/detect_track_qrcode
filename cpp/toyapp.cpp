@@ -24,11 +24,12 @@ std::string join(std::vector<std::string>& v) {
 void tracking_cb(MockTracker* tracker) {
     auto logger = spd::get("toy");
     cv::Mat* debug_frame = tracker->get_debug_frame();
-    // cv::Point toy_center = tracker->get_last_toy_center();
+    cv::Point toy_center = tracker->get_last_toy_center();
     auto colors = tracker->get_toy_colors();
     logger->info("toy colors:[{}]", join(colors));
 
     cv::imshow("debug frame", *debug_frame);
+    logger->info("toy center:[{}, {}]", toy_center.x, toy_center.y);
 
     char key = (char)cv::waitKey(3);
     if (key == 27 || key == 'q' || key == 'Q') {

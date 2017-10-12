@@ -98,6 +98,7 @@ private:
         _toy_radius = 0;
         _toy_colors.clear();
         _toy_contour.clear();
+        _tracker_centers.clear();
         _toy_prediction = cv::Mat();
         _track_window = _united_fg = cv::Rect(0, 0, -1, -1);
     };

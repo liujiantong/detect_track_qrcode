@@ -115,6 +115,7 @@ void MockTracker::track() {
                 auto colors = detector.detect_color_from_contours(roi_image, founds, cnt);
 
                 if (!cnt.empty()) {
+                    logger->info("I found color square");
                     _track_window = cv::boundingRect(_toy_contour);
 
                     _toy_contour.clear();
@@ -220,6 +221,8 @@ cv::Rect MockTracker::camshift_track(cv::Mat& hsv, cv::Mat& mask, cv::Rect track
     backproj &= mask;
     // cv::RotatedRect track_box ignored
     cv::CamShift(backproj, track_win, cv::TermCriteria(cv::TermCriteria::EPS | cv::TermCriteria::COUNT, 10, 1 ));
+    logger->info("track_win.area:{}", track_win.area());
+
     if (track_win.area() <= 9) {
         // TODO: lost target.
         int r = (std::min(backproj.cols, backproj.rows) + 5)/6;
@@ -227,8 +230,12 @@ cv::Rect MockTracker::camshift_track(cv::Mat& hsv, cv::Mat& mask, cv::Rect track
                                  cv::Rect(0, 0, _frame_size.width, _frame_size.height);
         logger->warn("I lost toy after camshift. [x:{}, y:{}, w:{}, h:{}].", track_win.x-r, track_win.y-r, track_win.x+2*r, track_win.y+2*r);
     } else {
+        // FIXME: pnt error
         logger->info("I found toy again");
         _track_window = track_win;
+        cv::Point pnt(track_win.x + track_win.width/2, track_win.y + track_win.height/2);
+        logger->info("pnt:[{}, {}]", pnt.x, pnt.y);
+        add_new_tracker_point(pnt);
     }
 
     logger->debug("_track_window:[{}, {}, {}, {}]", _track_window.x, _track_window.y, _track_window.width, _track_window.height);
