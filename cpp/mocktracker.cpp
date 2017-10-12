@@ -227,6 +227,7 @@ cv::Rect MockTracker::camshift_track(cv::Mat& hsv, cv::Mat& mask, cv::Rect track
                                  cv::Rect(0, 0, _frame_size.width, _frame_size.height);
         logger->warn("I lost toy after camshift. [x:{}, y:{}, w:{}, h:{}].", track_win.x-r, track_win.y-r, track_win.x+2*r, track_win.y+2*r);
     } else {
+        logger->info("I found toy again");
         _track_window = track_win;
     }
 

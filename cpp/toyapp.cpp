@@ -38,8 +38,8 @@ void tracking_cb(MockTracker* tracker) {
 
 
 int main(int argc, char const *argv[]) {
-    auto logger = spd::stdout_color_mt("toy");
-    // auto logger = spd::daily_logger_mt("toy", "toy.log", 0, 0);
+    // auto logger = spd::stdout_color_mt("toy");
+    auto logger = spd::rotating_logger_mt("toy", "toy.log", 1048576 * 5, 3);
     logger->set_level(spd::level::info);
     logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] %v");
 
