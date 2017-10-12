@@ -20,6 +20,7 @@ public:
     _max_nb_of_centers(nb_of_cntr), _debug(debug), kalman_tracked(false) {
         _tracking_cb = nullptr;
         _united_fg = cv::Rect(0, 0, -1, -1);
+        _track_window = cv::Rect(0, 0, -1, -1);
         init_tracker();
     };
 
@@ -85,7 +86,7 @@ private:
     void init_kalman();
     void kalman_track(cv::Point cntr);
 
-    void calc_hist(cv::Mat& roi, cv::Mat& roi_mask);
+    void calc_hist(cv::Mat& img, cv::Rect rect);
     cv::Rect camshift_track(cv::Mat& hue, cv::Mat& mask, cv::Rect track_window);
 
     void add_new_tracker_point(cv::Point pnt, int min_distance=20, int max_distance=1000);

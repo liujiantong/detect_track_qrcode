@@ -121,6 +121,13 @@ void MockTracker::track() {
                         p += cv::Point(roi_x, roi_y);
                     }
 
+                    _track_window = cv::boundingRect(_toy_contour);
+                    logger->info("_track_window: ({}, {}, {}, {})",
+                                  _track_window.x, _track_window.y, _track_window.width, _track_window.height);
+                    cv::Mat hsv;
+                    cv::cvtColor(_frame, hsv, CV_BGR2HSV);
+                    logger->info("hsv ready for calc_hist");
+                    calc_hist(hsv, _track_window);
                     cv::Point cntr = pnts_center(_toy_contour);
                     // kalman_track(cntr);
                     // _toy_prediction = _kalman.predict();
@@ -130,6 +137,14 @@ void MockTracker::track() {
                     cv::Point2f c;
                     cv::minEnclosingCircle(cnt, c, _toy_radius);
                     add_new_tracker_point(cntr);
+                }
+            } else {
+                // check status and camshift tracking here
+                if (!_toy_hist.empty()) {
+                    cv::Mat hsv, mask;
+                    cv::cvtColor(_frame, hsv, CV_BGR2HSV);
+                    cv::inRange(hsv, cv::Scalar(0, 20, 20), cv::Scalar(180, 255, 255), mask);
+                    camshift_track(hsv, mask, _track_window);
                 }
             }
         } else {
@@ -170,14 +185,36 @@ void MockTracker::read_from_camera() {
 }
 
 
-void MockTracker::calc_hist(cv::Mat& roi, cv::Mat& roi_mask) {
-    calcHist(&roi, 1, 0, roi_mask, _toy_hist, 1, &hsize, &phranges);
+void MockTracker::calc_hist(cv::Mat& hsv, cv::Rect roi_rect) {
+    auto logger = spd::get("toy");
+    logger->info("calc_hist start");
+
+    cv::Mat mask;
+    cv::Mat roi = hsv(roi_rect);
+    logger->info("calc_hist roi ready");
+
+    cv::inRange(roi, cv::Scalar(0, 20, 0), cv::Scalar(180, 255, 255), mask);
+    logger->info("calc_hist mask ready");
+
+    int channels[] = {0};
+    // cv::calcHist(&hsv, 1, channels, mask, hist, 1, &hsize, ranges, true);
+    cv::calcHist(&roi, 1, channels, mask, _toy_hist, 1, &hsize, &phranges);
+    logger->info("calc_hist calcHist ready");
     normalize(_toy_hist, _toy_hist, 0, 180, cv::NORM_MINMAX);
+    logger->info("calc_hist calcHist done");
 }
 
 
-cv::Rect MockTracker::camshift_track(cv::Mat& hue, cv::Mat& mask, cv::Rect track_window) {
-    cv::Mat backproj;
+cv::Rect MockTracker::camshift_track(cv::Mat& hsv, cv::Mat& mask, cv::Rect track_window) {
+    // calcBackProject(&hue, 1, 0, hist, backproj, &phranges);
+    // backproj &= mask;
+
+
+    cv::Mat hue, backproj;
+    hue.create(hsv.size(), hsv.depth());
+    int ch[] = {0, 0};
+    cv::mixChannels(&hsv, 1, &hue, 1, ch, 1);
+
     cv::calcBackProject(&hue, 1, 0, _toy_hist, backproj, &phranges);
     backproj &= mask;
     cv::RotatedRect track_box = cv::CamShift(backproj, track_window, cv::TermCriteria(
@@ -206,11 +243,14 @@ void MockTracker::draw_debug_things(bool draw_fg, bool draw_contour, bool draw_p
         cv::drawContours(_debug_frame, cnts0, 0, cv::Scalar(0, 0, 255), 2);
     }
 
-    if (kalman_tracked && draw_prediction && _toy_radius > 0) {
-        // FIXME: Floating point exception: 8, (mocktracker.cpp:195)
-        cv::Point c(_toy_prediction.at<float>(0), _toy_prediction.at<float>(1));
-        cv::circle(_debug_frame, c, _toy_radius, cv::Scalar(255, 0, 0), 2);
-        logger->debug("draw prediction");
+    // if (kalman_tracked && draw_prediction && _toy_radius > 0) {
+    //     cv::Point c(_toy_prediction.at<float>(0), _toy_prediction.at<float>(1));
+    //     cv::circle(_debug_frame, c, _toy_radius, cv::Scalar(255, 0, 0), 2);
+    //     logger->debug("draw prediction");
+    // }
+
+    if (draw_prediction && !_toy_hist.empty() && _track_window.width > 0) {
+        cv::rectangle(_debug_frame, _track_window, cv::Scalar(255, 0, 0), 2);
     }
 }
 
