@@ -306,9 +306,14 @@ void MockTracker::add_new_tracker_point(cv::Point pnt, int min_distance, int max
         _tracker_centers.push_back(pnt);
     } else {
         double dst = calc_distance(pnt, _tracker_centers.back());
-        if (dst > min_distance && dst < max_distance) {
-            if (_tracker_centers.size() > _max_nb_of_centers) {
-                _tracker_centers.pop_front();
+        if (dst > min_distance) {
+            if (dst < max_distance) {
+                if (_tracker_centers.size() > _max_nb_of_centers) {
+                    _tracker_centers.pop_front();
+                }
+            } else {
+                // distance too large, clear history points
+                _tracker_centers.clear();
             }
             _tracker_centers.push_back(pnt);
         }
