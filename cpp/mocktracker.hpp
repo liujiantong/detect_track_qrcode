@@ -99,6 +99,7 @@ private:
         _toy_colors.clear();
         _toy_contour.clear();
         _toy_prediction = cv::Mat();
+        _track_window = _united_fg = cv::Rect(0, 0, -1, -1);
     };
 
 };

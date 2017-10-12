@@ -39,7 +39,6 @@ void MockTracker::init_kalman() {
     int n_states = 4, n_measurements = 2;
     _kalman.init(n_states, n_measurements);
 
-    // FIXME:BUG HERE
     /* DYNAMIC MODEL
     [1, 0, 1, 0]
     [0, 1, 0, 1]
@@ -77,7 +76,7 @@ void MockTracker::kalman_track(cv::Point cntr) {
     _measurement.at<float>(0) = cntr.x;
     _measurement.at<float>(1) = cntr.y;
     _kalman.correct(_measurement);
-    logger->info("measurement: ({}, {})", cntr.x, cntr.y);
+    logger->debug("measurement: ({}, {})", cntr.x, cntr.y);
 }
 
 
@@ -97,20 +96,23 @@ void MockTracker::track() {
         cv::Rect united_rect = compute_fg_bound_rect(_frame, _frame_size, kernel);
 
         if (united_rect.width > 0) {
-            _united_fg = united_rect;
+            int r = std::min(united_rect.width, united_rect.height) / 7;
+            _united_fg = (united_rect + cv::Size(r, r)) &
+                         cv::Rect(0, 0, _frame_size.width, _frame_size.height);
+            // _united_fg = united_rect;
             int roi_x = _united_fg.x, roi_y = _united_fg.y;
 
             cv::Mat roi_gray;
             cv::Mat roi_image = _frame(_united_fg);
             cv::cvtColor(roi_image, roi_gray, cv::COLOR_BGR2GRAY);
 
-            std::vector<std::vector<cv::Point> > founds = detector.find_code_contours(roi_gray);
+            auto founds = detector.find_code_contours(roi_gray);
 
             if (!founds.empty()) {
                 _wb->balanceWhite(roi_image, roi_image);
 
                 std::vector<cv::Point> cnt;
-                std::vector<std::string> colors = detector.detect_color_from_contours(roi_image, founds, cnt);
+                auto colors = detector.detect_color_from_contours(roi_image, founds, cnt);
 
                 if (!cnt.empty()) {
                     _track_window = cv::boundingRect(_toy_contour);
@@ -131,9 +133,6 @@ void MockTracker::track() {
 
                     cv::Point cntr = pnts_center(_toy_contour);
                     // kalman_track(cntr);
-                    // _toy_prediction = _kalman.predict();
-                    // std::cout << "_toy_prediction:" << cv::format(_toy_prediction, cv::Formatter::FMT_NUMPY) << std::endl;
-                    // logger->info("toy_prediction: ({}, {})", _toy_prediction.at<float>(0), _toy_prediction.at<float>(1));
 
                     cv::Point2f c;
                     cv::minEnclosingCircle(cnt, c, _toy_radius);
@@ -141,10 +140,17 @@ void MockTracker::track() {
                 }
             } else {
                 // check status and camshift tracking here
-                if (!_toy_hist.empty() && _track_window.width > 0) {
+                logger->info("I lost square, search it by camshift");
+                if (!_toy_hist.empty()) {
+                    if (_track_window.width < 1) {
+                        int w = _frame_size.width, h = _frame_size.height;
+                        _track_window = cv::Rect(0, 0, w / 4, h / 4);
+                    }
                     cv::Mat hsv, mask;
                     cv::cvtColor(_frame, hsv, CV_BGR2HSV);
-                    cv::inRange(hsv, cv::Scalar(0, 20, 20), cv::Scalar(180, 255, 255), mask);
+                    cv::inRange(hsv, cv::Scalar(0, 20, 10), cv::Scalar(180, 255, 255), mask);
+
+                    logger->debug("_track_window0:[{}, {}, {}, {}]", _track_window.x, _track_window.y, _track_window.width, _track_window.height);
                     camshift_track(hsv, mask, _track_window);
                 }
             }
@@ -201,8 +207,10 @@ void MockTracker::calc_hist(cv::Mat& hsv, cv::Rect roi_rect) {
 }
 
 
-cv::Rect MockTracker::camshift_track(cv::Mat& hsv, cv::Mat& mask, cv::Rect track_window) {
+cv::Rect MockTracker::camshift_track(cv::Mat& hsv, cv::Mat& mask, cv::Rect track_win) {
     auto logger = spd::get("toy");
+    logger->debug("camshift_track start");
+
     cv::Mat hue, backproj;
     hue.create(hsv.size(), hsv.depth());
     int ch[] = {0, 0};
@@ -210,15 +218,18 @@ cv::Rect MockTracker::camshift_track(cv::Mat& hsv, cv::Mat& mask, cv::Rect track
 
     cv::calcBackProject(&hue, 1, 0, _toy_hist, backproj, &phranges);
     backproj &= mask;
-    cv::RotatedRect track_box = cv::CamShift(backproj, track_window, cv::TermCriteria(
-                                             cv::TermCriteria::EPS | cv::TermCriteria::COUNT, 10, 1 ));
-    if (track_window.area() <= 1) {
-        int cols = backproj.cols, rows = backproj.rows, r = (std::min(cols, rows) + 5)/6;
-        track_window = cv::Rect(track_window.x - r, track_window.y - r,
-                                track_window.x + r, track_window.y + r) &
-                       cv::Rect(0, 0, cols, rows);
+    // cv::RotatedRect track_box ignored
+    cv::CamShift(backproj, track_win, cv::TermCriteria(cv::TermCriteria::EPS | cv::TermCriteria::COUNT, 10, 1 ));
+    if (track_win.area() <= 9) {
+        // TODO: lost target.
+        int r = (std::min(backproj.cols, backproj.rows) + 5)/6;
+        _track_window = cv::Rect(track_win.x-r, track_win.y-r, track_win.x+2*r, track_win.y+2*r) &
+                                 cv::Rect(0, 0, _frame_size.width, _frame_size.height);
+        logger->warn("I lost toy after camshift. [x:{}, y:{}, w:{}, h:{}].", track_win.x-r, track_win.y-r, track_win.x+2*r, track_win.y+2*r);
+    } else {
+        _track_window = track_win;
     }
-    _track_window = track_box.boundingRect();
+
     logger->debug("_track_window:[{}, {}, {}, {}]", _track_window.x, _track_window.y, _track_window.width, _track_window.height);
     return _track_window;
 }
@@ -276,17 +287,6 @@ cv::Rect MockTracker::compute_fg_bound_rect(const cv::Mat& frm, cv::Size max_siz
     }
 
     cv::Rect r = union_rects(boxes);
-
-    // int w = r.width;
-    // if (r.x + w > max_size.width) {
-    //     w = max_size.width - r.x;
-    // }
-    // int h = r.height;
-    // if (r.y + h > max_size.height) {
-    //     h = max_size.height - r.y;
-    // }
-    //
-    // return cv::Rect(r.x, r.y, w, h);
     return (r & cv::Rect(0, 0, max_size.width, max_size.height));
 }
 
