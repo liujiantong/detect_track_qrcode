@@ -113,6 +113,8 @@ void MockTracker::track() {
                 std::vector<std::string> colors = detector.detect_color_from_contours(roi_image, founds, cnt);
 
                 if (!cnt.empty()) {
+                    _track_window = cv::boundingRect(_toy_contour);
+
                     _toy_contour.clear();
                     _toy_contour = cnt;
                     _toy_colors = colors;
@@ -121,10 +123,12 @@ void MockTracker::track() {
                         p += cv::Point(roi_x, roi_y);
                     }
 
-                    _track_window = cv::boundingRect(_toy_contour);
-                    cv::Mat hsv;
-                    cv::cvtColor(_frame, hsv, CV_BGR2HSV);
-                    calc_hist(hsv, _track_window);
+                    if (_toy_hist.empty()) {
+                        cv::Mat hsv;
+                        cv::cvtColor(_frame, hsv, CV_BGR2HSV);
+                        calc_hist(_frame, _track_window);
+                    }
+
                     cv::Point cntr = pnts_center(_toy_contour);
                     // kalman_track(cntr);
                     // _toy_prediction = _kalman.predict();
@@ -137,7 +141,7 @@ void MockTracker::track() {
                 }
             } else {
                 // check status and camshift tracking here
-                if (!_toy_hist.empty()) {
+                if (!_toy_hist.empty() && _track_window.width > 0) {
                     cv::Mat hsv, mask;
                     cv::cvtColor(_frame, hsv, CV_BGR2HSV);
                     cv::inRange(hsv, cv::Scalar(0, 20, 20), cv::Scalar(180, 255, 255), mask);
@@ -162,7 +166,7 @@ void MockTracker::track() {
         }
 
         std::this_thread::yield();
-        // std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }
 
@@ -190,7 +194,7 @@ void MockTracker::calc_hist(cv::Mat& hsv, cv::Rect roi_rect) {
 
     cv::Mat roi = hsv(roi_rect);
     cv::inRange(roi, cv::Scalar(0, 20, 0), cv::Scalar(180, 255, 255), mask);
-    
+
     cv::calcHist(&roi, 1, channels, mask, _toy_hist, 1, &hsize, &phranges);
     normalize(_toy_hist, _toy_hist, 0, 180, cv::NORM_MINMAX);
     logger->info("calc_hist calcHist done");
@@ -198,6 +202,7 @@ void MockTracker::calc_hist(cv::Mat& hsv, cv::Rect roi_rect) {
 
 
 cv::Rect MockTracker::camshift_track(cv::Mat& hsv, cv::Mat& mask, cv::Rect track_window) {
+    auto logger = spd::get("toy");
     cv::Mat hue, backproj;
     hue.create(hsv.size(), hsv.depth());
     int ch[] = {0, 0};
@@ -214,6 +219,7 @@ cv::Rect MockTracker::camshift_track(cv::Mat& hsv, cv::Mat& mask, cv::Rect track
                        cv::Rect(0, 0, cols, rows);
     }
     _track_window = track_box.boundingRect();
+    logger->debug("_track_window:[{}, {}, {}, {}]", _track_window.x, _track_window.y, _track_window.width, _track_window.height);
     return _track_window;
 }
 
