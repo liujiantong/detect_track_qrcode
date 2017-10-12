@@ -175,14 +175,17 @@ void MockTracker::calc_hist(cv::Mat& roi, cv::Mat& roi_mask) {
 }
 
 
-void MockTracker::camshift(cv::Mat& hue, cv::Mat& mask, cv::Rect track_window) {
+void MockTracker::camshift_track(cv::Mat& hue, cv::Mat& mask, cv::Rect track_window) {
     cv::Mat backproj;
     cv::calcBackProject(&hue, 1, 0, _toy_hist, backproj, &phranges);
     backproj &= mask;
     cv::RotatedRect track_box = cv::CamShift(backproj, track_window, cv::TermCriteria(
                                              cv::TermCriteria::EPS | cv::TermCriteria::COUNT, 10, 1 ));
-    if( track_window.area() <= 1 ) {
-        // TODO:
+    if (track_window.area() <= 1) {
+        int cols = backproj.cols, rows = backproj.rows, r = (std::min(cols, rows) + 5)/6;
+        track_window = cv::Rect(track_window.x - r, track_window.y - r,
+                                track_window.x + r, track_window.y + r) &
+                       cv::Rect(0, 0, cols, rows);
     }
 }
 
@@ -237,16 +240,17 @@ cv::Rect MockTracker::compute_fg_bound_rect(const cv::Mat& frm, cv::Size max_siz
 
     cv::Rect r = union_rects(boxes);
 
-    int w = r.width;
-    if (r.x + w > max_size.width) {
-        w = max_size.width - r.x;
-    }
-    int h = r.height;
-    if (r.y + h > max_size.height) {
-        h = max_size.height - r.y;
-    }
-
-    return cv::Rect(r.x, r.y, w, h);
+    // int w = r.width;
+    // if (r.x + w > max_size.width) {
+    //     w = max_size.width - r.x;
+    // }
+    // int h = r.height;
+    // if (r.y + h > max_size.height) {
+    //     h = max_size.height - r.y;
+    // }
+    //
+    // return cv::Rect(r.x, r.y, w, h);
+    return (r & cv::Rect(0, 0, max_size.width, max_size.height));
 }
 
 void MockTracker::add_new_tracker_point(cv::Point pnt, int min_distance, int max_distance) {

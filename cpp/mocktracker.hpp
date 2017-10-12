@@ -72,6 +72,7 @@ private:
     cv::Mat _toy_prediction;
 
     cv::Mat _toy_hist;
+    cv::RotatedRect _track_box;
 
     cv::KalmanFilter _kalman;
     cv::Ptr<cv::BackgroundSubtractorMOG2> _fgbg;
@@ -84,8 +85,7 @@ private:
     void kalman_track(cv::Point cntr);
 
     void calc_hist(cv::Mat& roi, cv::Mat& roi_mask);
-    void camshift(cv::Mat& hue, cv::Mat& mask, cv::Rect track_window);
-    void camshift_track();
+    void camshift_track(cv::Mat& hue, cv::Mat& mask, cv::Rect track_window);
 
     void add_new_tracker_point(cv::Point pnt, int min_distance=20, int max_distance=1000);
     // cv::Rect compute_fg_bound_rect(const cv::Mat frm, cv::Size max_size, cv::Mat& kernel);
