@@ -14,6 +14,7 @@ LDFLAGS=-L/usr/local/lib/ CPATH=/usr/local/include/ pip install git+https://gith
 ```
 mkdir build
 cd build/
+cmake .. OR
 cmake -DCMAKE_BUILD_TYPE=Debug ..
 make
 ```
