@@ -14,7 +14,7 @@ typedef enum direct_e {
     EAST_SOUTH_DIR = -1,
     SOUTH_DIR = -2,
     WEST_SOUTH_DIR = -3,
-    UNKNOWN_DIR
+    UNKNOWN_DIR = -100
 } direct_t;
 
 typedef struct direct_pos_s {
@@ -23,6 +23,6 @@ typedef struct direct_pos_s {
     cv::Point position;
 } direct_pos_t;
 
-#define NONE_DERICT_POS {0, UNKNOWN_DIR, cv::Point(0, 0)};
+#define NONE_DERICT_POS {0, UNKNOWN_DIR, cv::Point(-1, -1)};
 
 #endif // __TOY_HPP__

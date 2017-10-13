@@ -33,7 +33,7 @@ void tracking_cb(MockTracker* tracker) {
     cv::imshow("debug frame", *debug_frame);
 
     direct_pos_t dp = tracker->get_direct_pos();
-    logger->info("toy center:[{}, {}], direction:{}", toy_center.x, toy_center.y, toy_direct_name(dp.direct));
+    logger->info("center:[{},{}], position:[{},{}], direction:{}", toy_center.x, toy_center.y, dp.position.x, dp.position.y, toy_direct_name(dp.direct));
 
     char key = (char)cv::waitKey(3);
     if (key == 27 || key == 'q' || key == 'Q') {

@@ -321,11 +321,13 @@ void MockTracker::add_new_tracker_point(cv::Point pnt, int min_distance, int max
 }
 
 direct_pos_t MockTracker::get_direct_pos() {
+    auto logger = spd::get("toy");
     if (_tracker_centers.size() > 1) {
         cv::Point tail = _tracker_centers.front();
         cv::Point head = _tracker_centers.back();
         return calc_direct(tail, head);
     } else {
+        logger->info("get_direct_pos: NONE_DERICT_POS");
         return NONE_DERICT_POS;
     }
 }
