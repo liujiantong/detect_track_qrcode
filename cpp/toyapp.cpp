@@ -11,6 +11,8 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 
+#include "helper.hpp"
+
 
 namespace spd = spdlog;
 
@@ -29,7 +31,9 @@ void tracking_cb(MockTracker* tracker) {
     logger->info("toy colors:[{}]", join(colors));
 
     cv::imshow("debug frame", *debug_frame);
-    logger->info("toy center:[{}, {}]", toy_center.x, toy_center.y);
+
+    direct_pos_t dp = tracker->get_direct_pos();
+    logger->info("toy center:[{}, {}], direction:{}", toy_center.x, toy_center.y, toy_direct_name(dp.direct));
 
     char key = (char)cv::waitKey(3);
     if (key == 27 || key == 'q' || key == 'Q') {

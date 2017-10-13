@@ -6,6 +6,7 @@
 #include <vector>
 #include <deque>
 
+#include "toy.hpp"
 #include "camera.hpp"
 
 
@@ -16,7 +17,7 @@ typedef void (*tracking_callback)(MockTracker*);
 class MockTracker {
 
 public:
-    MockTracker(SimpleCamera* cam, int nb_of_cntr=30, bool debug=false) : _camera(cam),
+    MockTracker(SimpleCamera* cam, int nb_of_cntr=20, bool debug=false) : _camera(cam),
     _max_nb_of_centers(nb_of_cntr), _debug(debug), kalman_tracked(false) {
         _tracking_cb = nullptr;
         _united_fg = cv::Rect(0, 0, -1, -1);
@@ -25,7 +26,7 @@ public:
     };
 
     void track();
-
+    direct_pos_t get_direct_pos();
 
     cv::Mat* get_frame() {
         return &_frame;

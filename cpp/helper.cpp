@@ -2,6 +2,7 @@
 #include <opencv2/imgproc.hpp>
 
 #include <numeric>
+#include <cmath>
 
 
 cv::Size get_frame_size(cv::Size size, unsigned max_width) {
@@ -67,4 +68,40 @@ std::tuple<double, double> calc_mean_stdev(const std::vector<double> v) {
     double stdev = std::sqrt(sq_sum / v.size());
 
     return std::make_tuple(mean, stdev);
+}
+
+direct_pos_t calc_direct(cv::Point head, cv::Point tail) {
+    cv::Point pnt0(tail.x, head.y);
+    double cos_val = angle_cos(pnt0, head, tail);
+    double angle = std::acos(cos_val);
+    // std::cout << "cos_val:" << cos_val << ", angle:" << angle << std::endl;
+    int degree = (int)((angle / 3.1416) * 180 + 22.5) / 45;
+    if (tail.y < pnt0.y) {
+        degree *= -1;
+    }
+    direct_pos_t d = {angle, (direct_t)degree, tail};
+    return d;
+}
+
+std::string toy_direct_name(direct_t d) {
+    switch (d) {
+        case EAST_DIR:
+            return "EAST";
+        case EAST_NORTH_DIR:
+            return "EAST_NORTH";
+        case NORTH_DIR:
+            return "NORTH";
+        case WEST_NORTH_DIR:
+            return "WEST_NORTH";
+        case WEST_DIR:
+            return "WEST";
+        case WEST_SOUTH_DIR:
+            return "WEST_SOUTH";
+        case SOUTH_DIR:
+            return "SOUTH";
+        case EAST_SOUTH_DIR:
+            return "EAST_SOUTH";
+        default:
+            return "UNKNOWN";
+    }
 }
