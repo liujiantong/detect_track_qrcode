@@ -4,6 +4,7 @@
 #include <CppUTest/TestHarness.h>
 #include <CppUTest/CommandLineTestRunner.h>
 
+
 using namespace std;
 
 TEST_GROUP(HelperTest) {
@@ -22,7 +23,6 @@ TEST(HelperTest, AngleCos) {
     double cosv1 = angle_cos(pt1, pt2, pt4);
     CHECK_EQUAL(cosv, cosv1);
 }
-
 
 TEST(HelperTest, CalcDirect) {
     cv::Point tail1(0, 0), head1(1, 1);

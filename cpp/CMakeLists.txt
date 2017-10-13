@@ -10,15 +10,25 @@ pkg_search_module(CPPUTEST REQUIRED cpputest>=3.8)
 project( detect_track_qrcode )
 find_package( OpenCV REQUIRED )
 
+set(TOY_LIB_NAME toy)
+set(TOY_LIB_SOURCE
+    mocktracker.cpp
+    camera.cpp
+    detector.cpp
+    helper.cpp
+)
+add_library(${TOY_LIB_NAME} ${TOY_LIB_SOURCE})
+target_link_libraries(${TOY_LIB_NAME} ${OpenCV_LIBS})
+
 # add_executable( video_cap video_cap.cpp )
-# add_executable( testapp testapp.cpp camera.cpp )
+# add_executable( testapp testapp.cpp )
 # target_link_libraries( video_cap ${OpenCV_LIBS} )
-# target_link_libraries( testapp ${OpenCV_LIBS} )
+# target_link_libraries( testapp ${TOY_LIB_NAME} )
 
-add_executable( toyapp toyapp.cpp mocktracker.cpp camera.cpp detector.cpp helper.cpp )
-add_executable( test_detect test_detect.cpp detector.cpp helper.cpp )
-add_executable( helper_unittest helper_unittest.cpp helper.cpp )
+add_executable( toyapp toyapp.cpp )
+add_executable( test_detect test_detect.cpp )
+add_executable( helper_unittest helper_unittest.cpp )
 
-target_link_libraries( toyapp ${OpenCV_LIBS} )
-target_link_libraries( test_detect ${OpenCV_LIBS} )
-target_link_libraries( helper_unittest ${OpenCV_LIBS} ${CPPUTEST_LDFLAGS})
+target_link_libraries( toyapp ${TOY_LIB_NAME} )
+target_link_libraries( test_detect ${TOY_LIB_NAME} )
+target_link_libraries( helper_unittest ${TOY_LIB_NAME} ${CPPUTEST_LDFLAGS})
