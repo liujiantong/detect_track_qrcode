@@ -33,8 +33,8 @@ cv::Point pnts_center(std::vector<cv::Point>& points) {
     return cv::Point(cx, cy);
 }
 
-cv::Point contour_center(std::vector<cv::Point> contour, bool bin_img) {
-    cv::Moments m = cv::moments(contour, bin_img);
+cv::Point contour_center(std::vector<cv::Point> contour) {
+    cv::Moments m = cv::moments(contour, false);
     return cv::Point((m.m10 / m.m00), (m.m01 / m.m00));
 }
 

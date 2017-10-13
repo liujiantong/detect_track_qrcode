@@ -132,7 +132,8 @@ void MockTracker::track() {
                         calc_hist(_frame, _track_window);
                     }
 
-                    cv::Point cntr = pnts_center(_toy_contour);
+                    cv::Point cntr = contour_center(_toy_contour);
+                    // cv::Point cntr = pnts_center(_toy_contour);
                     // kalman_track(cntr);
 
                     cv::Point2f c;
@@ -152,6 +153,7 @@ void MockTracker::track() {
                     cv::inRange(hsv, cv::Scalar(0, 20, 10), cv::Scalar(180, 255, 255), mask);
 
                     logger->debug("_track_window0:[{}, {}, {}, {}]", _track_window.x, _track_window.y, _track_window.width, _track_window.height);
+                    _tracker_centers.clear();
                     camshift_track(hsv, mask, _track_window);
                 }
             }

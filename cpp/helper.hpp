@@ -11,7 +11,7 @@
 cv::Size get_frame_size(cv::Size size, unsigned max_width=1024);
 cv::Rect union_rects(std::vector<cv::Rect>& rects);
 cv::Point pnts_center(std::vector<cv::Point>& points);
-cv::Point contour_center(std::vector<cv::Point> contour, bool bin_img=true);
+cv::Point contour_center(std::vector<cv::Point> contour);
 double calc_distance(const cv::Point pt1, const cv::Point pt2);
 double angle_cos(cv::Point pt0, cv::Point pt1, cv::Point pt2);
 double sum_histogram(cv::Mat& hist, const cv::Range& range);
