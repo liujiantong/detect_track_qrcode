@@ -17,6 +17,7 @@ public:
     std::tuple<bool, std::vector<cv::Point> > detect_square(std::vector<cv::Point>& cnt);
     static color_t detect_color(cv::Mat& roi);
     std::vector<color_t> detect_color_in(cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst);
+    std::vector<shape_t> detect_shape_in(cv::Mat& roi_edged);
     std::vector<color_t> detect_color_from_contours(cv::Mat& img,
         std::vector<std::vector<cv::Point> >& cnts,
         std::vector<cv::Point>& out_cnt);

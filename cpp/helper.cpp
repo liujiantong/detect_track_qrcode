@@ -83,19 +83,32 @@ direct_pos_t calc_direct(cv::Point head, cv::Point tail) {
     return d;
 }
 
+// FIXME:
 shape_t detect_shape(cv::Mat& edged) {
     std::vector<cv::Vec4i> hierarchy;
     std::vector<std::vector<cv::Point> > contours, found_cnts;
-    cv::findContours(edged, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+    cv::findContours(edged, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
     if (hierarchy.empty()) {
         return NONE_SHAPE;
     }
 
-    auto cnt = contours[0];
+    // auto cnt = contours[0];
+    std::vector<std::tuple<double, int> > areas;
+    for (int i=0; i<contours.size(); i++) {
+        double area = cv::contourArea(contours[i]);
+        areas.push_back(std::make_tuple(area, i));
+    }
+
+    std::sort(areas.begin(), areas.end(),
+    [](const std::tuple<double, int>& a, const std::tuple<double, int>& b) -> bool {
+        return std::get<0>(a) > std::get<0>(b);
+    });
+    auto cnt = contours[std::get<1>(areas[0])];
+
     double peri = cv::arcLength(cnt, true);
     std::vector<cv::Point> approx;
-    cv::approxPolyDP(cnt, approx, peri*0.02, true);
+    cv::approxPolyDP(cnt, approx, peri*0.03, true);
 
     int n_edge = approx.size();
     switch (n_edge) {

@@ -112,6 +112,8 @@ std::vector<color_t> ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::
     // for debug
     // cv::imwrite("warped_dst.png", warped_dst);
 
+    auto shapes = detect_shape_in(warped_dst);
+
     cv::Size half_size(warped_size.width/2, warped_size.height/2);
     logger->debug("half_size:[{}, {}]", half_size.width, half_size.height);
 
@@ -140,11 +142,40 @@ std::vector<color_t> ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::
         }
     }
 
+    // FIXME
     if (color_idx != -1) {
         std::rotate(colors.begin(), colors.begin() + color_idx, colors.end());
+        std::rotate(shapes.begin(), shapes.begin() + color_idx, shapes.end());
     }
+
+    for (auto s : shapes) {
+        logger->info("shape:{}", s);
+    }
+
     //return std::make_tuple(colors, dst);
     return colors;
+}
+
+
+// FIXME:
+std::vector<shape_t> ToyDetector::detect_shape_in(cv::Mat& roi) {
+    cv::Mat gray, blurred, edged;
+    cv::cvtColor(roi, gray, CV_BGR2GRAY);
+    cv::medianBlur(gray, blurred, 3);
+    cv::Canny(blurred, edged, 100, 120);
+
+    cv::Size half_size(roi.cols/2, roi.rows/2);
+    cv::Mat roi1 = edged(cv::Rect(0, 0, half_size.width, half_size.height));
+    cv::Mat roi2 = edged(cv::Rect(half_size.width, 0, half_size.width, half_size.height));
+    cv::Mat roi3 = edged(cv::Rect(half_size.width, half_size.height, half_size.width, half_size.height));
+    cv::Mat roi4 = edged(cv::Rect(0, half_size.height, half_size.width, half_size.height));
+
+    std::vector<shape_t> shapes = {
+        detect_shape(roi1), detect_shape(roi2),
+        detect_shape(roi3), detect_shape(roi4)
+    };
+
+    return shapes;
 }
 
 
