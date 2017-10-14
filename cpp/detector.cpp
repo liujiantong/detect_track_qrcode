@@ -4,6 +4,8 @@
 
 #include <vector>
 #include <algorithm>
+//#include <opencv2/calib3d.hpp>
+
 
 namespace spd = spdlog;
 
@@ -97,10 +99,16 @@ std::vector<std::string> ToyDetector::detect_color_in(cv::Mat& img, std::vector<
         return colors;
     }
 
+    cv::Size warped_size(_block_size, _block_size);
     out_dst.create(_block_size, _block_size, img.type());
-
     cv::Mat mtx = cv::getAffineTransform(src_pnts, square_pnts);
-    cv::warpAffine(img, out_dst, mtx, cv::Size(_block_size, _block_size));
+    cv::warpAffine(img, out_dst, mtx, warped_size);
+
+    /* TODO:
+    cv::Mat warped_img;
+    cv::Mat H = cv::findHomography(src_pnts, square_pnts);
+    cv::warpPerspective(img, warped_img, H, warped_size);
+    */
 
     cv::Mat roi1 = out_dst(cv::Rect(0, 0, half_block_size, half_block_size));
     cv::Mat roi2 = out_dst(cv::Rect(half_block_size, 0, half_block_size, half_block_size));
