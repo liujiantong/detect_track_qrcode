@@ -72,14 +72,22 @@ typedef struct color_code_s {
     std::array<color_t, 4> colors;
     std::array<shape_t, 4> shapes;
     int encode() {
+        int n_colors = 6, n_shapes = 3;
+        int base = n_colors * n_shapes;
+
         int code = 0;
-        for (int i=0; i<colors.size(); i++) {
-            if (colors[i] < 0 || shapes[i] < 0) {
-                return 0;
+        int c0 = colors[0];
+        if (c0 < RED || c0 > MAGENTA) return -1;
+
+        for (int i=1; i<colors.size(); i++) {
+            if ((colors[i] < RED || colors[i] > MAGENTA) ||
+                (shapes[i] < TRIANGLE || shapes[i] > HEXAGON)) {
+                return -1;
             }
-            code += (colors[i]+1) * (shapes[i]-2);
+            int c = colors[i], s = shapes[i]-3;
+            code += (c + std::pow(n_colors, s)) * std::pow(base, (i - 1));
         }
-        return code;
+        return c0 * std::pow(base, 3) + code;
     }
 } color_code_t;
 
