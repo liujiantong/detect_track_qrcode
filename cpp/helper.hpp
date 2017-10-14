@@ -17,8 +17,11 @@ double angle_cos(cv::Point pt0, cv::Point pt1, cv::Point pt2);
 double sum_histogram(cv::Mat& hist, const cv::Range& range);
 std::tuple<double, double> calc_mean_stdev(const std::vector<double> v);
 direct_pos_t calc_direct(cv::Point head, cv::Point tail);
-std::string toy_direct_name(direct_t d);
+
 std::string join(std::vector<std::string>& v);
+std::string toy_direct_name(direct_t d);
+std::string color_name(color_t c);
+std::vector<std::string> get_color_names(std::vector<color_t>& colors);
 
 
 #endif // __HIVE_HELPER_HPP__

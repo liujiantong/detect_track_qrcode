@@ -4,6 +4,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/xphoto/white_balance.hpp>
+#include <algorithm>
 
 
 namespace spd = spdlog;
@@ -61,10 +62,11 @@ int main(int argc, char const *argv[]) {
         logger->debug("wb created");
 
         std::vector<cv::Point> cnt;
-        std::vector<std::string> colors = detector.detect_color_from_contours(image, founds, cnt);
+        std::vector<color_t> colors = detector.detect_color_from_contours(image, founds, cnt);
         logger->debug("colors.size:{}, cnt.size:{}", colors.size(), cnt.size());
 
-        logger->debug("colors:{}", join(colors));
+        auto colors_str = get_color_names(colors);
+        logger->debug("colors:{}", join(colors_str));
 
         if (!cnt.empty()) {
             std::vector<std::vector<cv::Point> > cnts = {cnt};

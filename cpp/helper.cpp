@@ -111,3 +111,33 @@ std::string toy_direct_name(direct_t d) {
             return "UNKNOWN";
     }
 }
+
+std::string color_name(color_t c) {
+    switch (c) {
+        case WHITE:
+            return "white";
+        case RED:
+            return "red";
+        case YELLOW:
+            return "yellow";
+        case GREEN:
+            return "green";
+        case CYAN:
+            return "cyan";
+        case BLUE:
+            return "blue";
+        case MAGENTA:
+            return "magenta";
+        default:
+            return "white";
+    }
+}
+
+std::vector<std::string> get_color_names(std::vector<color_t>& colors) {
+    std::vector<std::string> v;
+    v.reserve(colors.size());
+    std::transform(colors.begin(), colors.end(),  std::back_inserter(v), [](color_t c) {
+        return color_name(c);
+    });
+    return v;
+}

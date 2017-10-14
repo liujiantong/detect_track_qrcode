@@ -5,6 +5,8 @@
 #include <string>
 #include <opencv2/opencv.hpp>
 
+#include "toy.hpp"
+
 
 class ToyDetector {
 public:
@@ -13,9 +15,9 @@ public:
 
     std::vector<std::vector<cv::Point> > find_code_contours(cv::Mat& gray);
     std::tuple<bool, std::vector<cv::Point> > detect_square(std::vector<cv::Point>& cnt);
-    static std::string detect_color(cv::Mat& roi);
-    std::vector<std::string> detect_color_in(cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst);
-    std::vector<std::string> detect_color_from_contours(cv::Mat& img,
+    static color_t detect_color(cv::Mat& roi);
+    std::vector<color_t> detect_color_in(cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst);
+    std::vector<color_t> detect_color_from_contours(cv::Mat& img,
         std::vector<std::vector<cv::Point> >& cnts,
         std::vector<cv::Point>& out_cnt);
 

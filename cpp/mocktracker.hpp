@@ -43,7 +43,7 @@ public:
         return _tracker_centers.back();
     };
 
-    std::vector<std::string> get_toy_colors() {
+    std::vector<color_t> get_toy_colors() {
         return _toy_colors;
     };
 
@@ -68,7 +68,7 @@ private:
 
     cv::Rect _united_fg;
     std::vector<cv::Point> _toy_contour;
-    std::vector<std::string> _toy_colors;
+    std::vector<color_t> _toy_colors;
     float _toy_radius;
     cv::Mat _measurement;
     cv::Mat _toy_prediction;

@@ -45,7 +45,7 @@ std::vector<std::vector<cv::Point> > ToyDetector::find_code_contours(cv::Mat& gr
 }
 
 
-std::vector<std::string> ToyDetector::detect_color_from_contours(cv::Mat& img,
+std::vector<color_t> ToyDetector::detect_color_from_contours(cv::Mat& img,
     std::vector<std::vector<cv::Point> >& cnts,
     std::vector<cv::Point>& out_cnt) {
 
@@ -60,13 +60,13 @@ std::vector<std::string> ToyDetector::detect_color_from_contours(cv::Mat& img,
     logger->debug("square_cnts.size:{}", square_cnts.size());
 
     if (square_cnts.empty()) {
-        std::vector<std::string> colors;
+        std::vector<color_t> colors;
         return colors;
     }
 
     cv::Mat out_dst;
     std::vector<cv::Point> bound_cnt = check_cnt_contain(square_cnts);
-    std::vector<std::string> colors = detect_color_in(img, bound_cnt, out_dst);
+    auto colors = detect_color_in(img, bound_cnt, out_dst);
     // fill out_cnt
     out_cnt.assign(bound_cnt.begin(), bound_cnt.end());
     logger->debug("colors.size:{}", colors.size());
@@ -75,10 +75,10 @@ std::vector<std::string> ToyDetector::detect_color_from_contours(cv::Mat& img,
 }
 
 
-std::vector<std::string> ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst) {
+std::vector<color_t> ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst) {
     auto logger = spd::get("toy");
 
-    std::vector<std::string> colors;
+    std::vector<color_t> colors;
 
     int half_block_size = _block_size / 2;
     cv::Rect r = cv::boundingRect(cnt);
@@ -134,7 +134,7 @@ std::vector<std::string> ToyDetector::detect_color_in(cv::Mat& img, std::vector<
 
     int color_idx = -1;
     for (int i=0; i<colors.size(); i++) {
-        if (colors[i] == "white") {
+        if (colors[i] == WHITE) {
             color_idx = i;
             break;
         }
@@ -179,7 +179,7 @@ std::tuple<bool, std::vector<cv::Point> > ToyDetector::detect_square(std::vector
 }
 
 
-std::string ToyDetector::detect_color(cv::Mat& roi) {
+color_t ToyDetector::detect_color(cv::Mat& roi) {
     auto logger = spd::get("toy");
 
     cv::Mat hsv, mask, white_mask, hist;
@@ -194,7 +194,7 @@ std::string ToyDetector::detect_color(cv::Mat& roi) {
 
     float wr = cnz / ((float)(h * w));
     if (wr > 0.8) {
-        return "white";
+        return WHITE;
     }
 
     // int hsize = 30;
@@ -211,19 +211,19 @@ std::string ToyDetector::detect_color(cv::Mat& roi) {
     double bval = sum_histogram(hist, BLUE_RANGE);
 
     // find max value
-    std::vector<std::tuple<std::string, double> > tups = {
-        {"red", rval}, {"green", gval}, {"blue", bval}
+    std::vector<std::tuple<color_t, double> > tups = {
+        {RED, rval}, {GREEN, gval}, {BLUE, bval}
     };
     auto max_tup = *std::max_element(tups.begin(), tups.end(),
-                                     [](const std::tuple<std::string, double>& t1,
-                                        const std::tuple<std::string, double>& t2) -> bool {
+                                     [](const std::tuple<color_t, double>& t1,
+                                        const std::tuple<color_t, double>& t2) -> bool {
                                         return std::get<1>(t1) < std::get<1>(t2);
                                     });
     double max_val = std::get<1>(max_tup);
     if (max_val > 1.0f) {
         return std::get<0>(max_tup);
     }
-    return "unknown";
+    return UNKNOWN;
 }
 
 std::vector<cv::Point> ToyDetector::check_cnt_contain(std::vector<std::vector<cv::Point> >& cnts) {

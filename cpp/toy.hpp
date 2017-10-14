@@ -50,6 +50,8 @@ H = 300°..360° => RED
 
 
 typedef enum color_e {
+    UNKNOWN = -2,
+    WHITE = -1,
     RED = 0,
     YELLOW,
     GREEN,
