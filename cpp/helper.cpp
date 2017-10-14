@@ -83,6 +83,12 @@ direct_pos_t calc_direct(cv::Point head, cv::Point tail) {
     return d;
 }
 
+std::string join(std::vector<std::string>& v) {
+    std::ostringstream imploded;
+    std::copy(v.begin(), v.end(), std::ostream_iterator<std::string>(imploded, " "));
+    return imploded.str();
+}
+
 std::string toy_direct_name(direct_t d) {
     switch (d) {
         case EAST_DIR:

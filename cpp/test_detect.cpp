@@ -69,10 +69,7 @@ int main(int argc, char const *argv[]) {
         std::vector<std::string> colors = detector.detect_color_from_contours(image, founds, cnt);
         logger->debug("colors.size:{}, cnt.size:{}", colors.size(), cnt.size());
 
-        for (auto c : colors) {
-            std::cout << c << std::endl;
-        }
-        logger->debug("print colors");
+        logger->debug("colors:{}", join(colors));
 
         if (!cnt.empty()) {
             std::vector<std::vector<cv::Point> > cnts = {cnt};

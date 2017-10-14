@@ -18,6 +18,7 @@ double sum_histogram(cv::Mat& hist, const cv::Range& range);
 std::tuple<double, double> calc_mean_stdev(const std::vector<double> v);
 direct_pos_t calc_direct(cv::Point head, cv::Point tail);
 std::string toy_direct_name(direct_t d);
+std::string join(std::vector<std::string>& v);
 
 
 #endif // __HIVE_HELPER_HPP__
