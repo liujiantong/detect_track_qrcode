@@ -61,6 +61,7 @@ typedef enum color_e {
 } color_t;
 
 typedef enum shape_e {
+    NONE_SHAPE = 0,
     TRIANGLE = 3,
     SQUARE,
     PENTAGON

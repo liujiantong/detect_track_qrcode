@@ -83,6 +83,33 @@ direct_pos_t calc_direct(cv::Point head, cv::Point tail) {
     return d;
 }
 
+shape_t detect_shape(cv::Mat& edged) {
+    std::vector<cv::Vec4i> hierarchy;
+    std::vector<std::vector<cv::Point> > contours, found_cnts;
+    cv::findContours(edged, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+
+    if (hierarchy.empty()) {
+        return NONE_SHAPE;
+    }
+
+    auto cnt = contours[0];
+    double peri = cv::arcLength(cnt, true);
+    std::vector<cv::Point> approx;
+    cv::approxPolyDP(cnt, approx, peri*0.02, true);
+
+    int n_edge = approx.size();
+    switch (n_edge) {
+        case 3:
+            return TRIANGLE;
+        case 4:
+            return SQUARE;
+        case 5:
+            return PENTAGON;
+        default:
+            return NONE_SHAPE;
+    }
+}
+
 std::string join(std::vector<std::string>& v) {
     std::ostringstream imploded;
     std::copy(v.begin(), v.end(), std::ostream_iterator<std::string>(imploded, " "));

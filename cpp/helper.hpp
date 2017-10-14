@@ -23,5 +23,7 @@ std::string toy_direct_name(direct_t d);
 std::string color_name(color_t c);
 std::vector<std::string> get_color_names(std::vector<color_t>& colors);
 
+shape_t detect_shape(cv::Mat& img);
+
 
 #endif // __HIVE_HELPER_HPP__
