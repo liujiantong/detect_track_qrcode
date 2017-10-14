@@ -118,6 +118,8 @@ shape_t detect_shape(cv::Mat& edged) {
             return SQUARE;
         case 5:
             return PENTAGON;
+        case 6:
+            return HEXAGON;
         default:
             return NONE_SHAPE;
     }

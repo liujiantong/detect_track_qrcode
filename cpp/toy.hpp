@@ -61,18 +61,25 @@ typedef enum color_e {
 } color_t;
 
 typedef enum shape_e {
-    NONE_SHAPE = 0,
+    NONE_SHAPE = -1,
     TRIANGLE = 3,
     SQUARE,
-    PENTAGON
+    PENTAGON,
+    HEXAGON
 } shape_t;
 
 typedef struct color_code_s {
     std::array<color_t, 4> colors;
     std::array<shape_t, 4> shapes;
     int encode() {
-        // TODO:
-        return 0;
+        int code = 0;
+        for (int i=0; i<colors.size(); i++) {
+            if (colors[i] < 0 || shapes[i] < 0) {
+                return 0;
+            }
+            code += (colors[i]+1) * (shapes[i]-2);
+        }
+        return code;
     }
 } color_code_t;
 
