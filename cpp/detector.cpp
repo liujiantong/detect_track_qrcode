@@ -4,7 +4,7 @@
 
 #include <vector>
 #include <algorithm>
-//#include <opencv2/calib3d.hpp>
+#include <opencv2/calib3d.hpp>
 
 
 namespace spd = spdlog;
@@ -84,14 +84,6 @@ std::vector<std::string> ToyDetector::detect_color_in(cv::Mat& img, std::vector<
     auto logger = spd::get("toy");
 
     std::vector<std::string> colors;
-    cv::Point2f src_pnts[3], square_pnts[3];
-
-    src_pnts[0] = cv::Point2f(cnt[0]);
-    src_pnts[1] = cv::Point2f(cnt[1]);
-    src_pnts[2] = cv::Point2f(cnt[2]);
-    square_pnts[0] = cv::Point2f(0.0f, 0.0f );
-    square_pnts[1] = cv::Point2f(_block_size, 0.0f );
-    square_pnts[2] = cv::Point2f(_block_size, _block_size);
 
     int half_block_size = _block_size / 2;
     cv::Rect r = cv::boundingRect(cnt);
@@ -99,21 +91,39 @@ std::vector<std::string> ToyDetector::detect_color_in(cv::Mat& img, std::vector<
         return colors;
     }
 
-    cv::Size warped_size(_block_size, _block_size);
-    out_dst.create(_block_size, _block_size, img.type());
-    cv::Mat mtx = cv::getAffineTransform(src_pnts, square_pnts);
-    cv::warpAffine(img, out_dst, mtx, warped_size);
+    // FIXME: find triangle here
 
-    /* TODO:
-    cv::Mat warped_img;
-    cv::Mat H = cv::findHomography(src_pnts, square_pnts);
-    cv::warpPerspective(img, warped_img, H, warped_size);
-    */
+    //* TODO: findHomography
+    cv::Mat warped_dst;
+    std::vector<cv::Point2f> roi_pnts;
+    std::vector<cv::Point2f> dst_pnts(4);
 
-    cv::Mat roi1 = out_dst(cv::Rect(0, 0, half_block_size, half_block_size));
-    cv::Mat roi2 = out_dst(cv::Rect(half_block_size, 0, half_block_size, half_block_size));
-    cv::Mat roi3 = out_dst(cv::Rect(half_block_size, half_block_size, half_block_size, half_block_size));
-    cv::Mat roi4 = out_dst(cv::Rect(0, half_block_size, half_block_size, half_block_size));
+    roi_pnts.push_back(cv::Point2f(cnt[0]));
+    roi_pnts.push_back(cv::Point2f(cnt[1]));
+    roi_pnts.push_back(cv::Point2f(cnt[2]));
+    roi_pnts.push_back(cv::Point2f(cnt[3]));
+    dst_pnts[0].x = 0;
+    dst_pnts[0].y = 0;
+    dst_pnts[1].x = (float)std::max(norm(roi_pnts[0] - roi_pnts[1]), norm(roi_pnts[2] - roi_pnts[3]));
+    dst_pnts[1].y = 0;
+    dst_pnts[2].x = (float)std::max(norm(roi_pnts[0] - roi_pnts[1]), norm(roi_pnts[2] - roi_pnts[3]));
+    dst_pnts[2].y = (float)std::max(norm(roi_pnts[1] - roi_pnts[2]), norm(roi_pnts[3] - roi_pnts[0]));
+    dst_pnts[3].x = 0;
+    dst_pnts[3].y = (float)std::max(norm(roi_pnts[1] - roi_pnts[2]), norm(roi_pnts[3] - roi_pnts[0]));
+
+    cv::Size warped_size(cvRound(dst_pnts[2].x), cvRound(dst_pnts[2].y));
+    cv::Mat H = findHomography(roi_pnts, dst_pnts);
+    cv::warpPerspective(img, warped_dst, H, warped_size);
+    // for debug
+    // cv::imwrite("warped_dst.png", warped_dst);
+
+    cv::Size half_size(warped_size.width/2, warped_size.height/2);
+    logger->debug("half_size:[{}, {}]", half_size.width, half_size.height);
+
+    cv::Mat roi1 = warped_dst(cv::Rect(0, 0, half_size.width, half_size.height));
+    cv::Mat roi2 = warped_dst(cv::Rect(half_size.width, 0, half_size.width, half_size.height));
+    cv::Mat roi3 = warped_dst(cv::Rect(half_size.width, half_size.height, half_size.width, half_size.height));
+    cv::Mat roi4 = warped_dst(cv::Rect(0, half_size.height, half_size.width, half_size.height));
 
     /* FIXME: for debug
     cv::imwrite("roi1.png", roi1);
