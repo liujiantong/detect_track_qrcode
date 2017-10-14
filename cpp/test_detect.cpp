@@ -8,11 +8,6 @@
 
 namespace spd = spdlog;
 
-const cv::Range RED_RANGE1(0, 30);
-const cv::Range RED_RANGE2(150, 180);
-const cv::Range GREEN_RANGE(30, 90);
-const cv::Range BLUE_RANGE(90, 140);
-
 
 #if 0
 void calc_color(cv::Mat& img) {

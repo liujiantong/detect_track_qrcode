@@ -1,3 +1,4 @@
+#include "toy.hpp"
 #include "detector.hpp"
 #include "helper.hpp"
 #include "spdlog/spdlog.h"
@@ -8,12 +9,6 @@
 
 
 namespace spd = spdlog;
-
-
-const cv::Range RED_RANGE1(0, 30);
-const cv::Range RED_RANGE2(150, 180);
-const cv::Range GREEN_RANGE(30, 90);
-const cv::Range BLUE_RANGE(90, 140);
 
 
 std::vector<std::vector<cv::Point> > ToyDetector::find_code_contours(cv::Mat& gray) {
