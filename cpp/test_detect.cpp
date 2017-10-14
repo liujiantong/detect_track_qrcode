@@ -60,11 +60,6 @@ int main(int argc, char const *argv[]) {
     std::vector<std::vector<cv::Point> > founds = detector.find_code_contours(gray);
     logger->debug("founds.size:{}", founds.size());
 
-    /*
-    auto color = detector.detect_color(roi3);
-    logger->info("color in roi3:{}", color);
-    calc_color(roi3);*/
-
     if (!founds.empty()) {
         auto wb = cv::xphoto::createSimpleWB();
         wb->balanceWhite(image, image);

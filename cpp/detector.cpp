@@ -119,8 +119,6 @@ std::vector<std::string> ToyDetector::detect_color_in(cv::Mat& img, std::vector<
     colors.push_back(detect_color(roi3));
     colors.push_back(detect_color(roi4));
 
-    logger->debug("colors.size:{}", colors.size());
-
     int color_idx = -1;
     for (int i=0; i<colors.size(); i++) {
         if (colors[i] == "white") {
