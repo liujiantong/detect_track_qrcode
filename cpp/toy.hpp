@@ -46,7 +46,7 @@ H = 300°..360° => RED
 #define CYAN_RANGE     cv::Range(75, 105)
 #define BLUE_RANGE     cv::Range(105, 135)
 #define MAGENTA_RANGE  cv::Range(135, 165)
-#define RED_RANGE2     cv::Range(160, 180)
+#define RED_RANGE2     cv::Range(165, 180)
 
 
 typedef enum color_e {
