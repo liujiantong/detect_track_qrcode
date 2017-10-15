@@ -253,7 +253,7 @@ color_t ToyDetector::detect_color(cv::Mat& roi) {
     if (max_val > 0.95f) {
         res_color = std::get<0>(max_tup);
     }
-    if (res_color == BLUE && mval > 0.6) {
+    if (res_color == BLUE && max_val < 2.0 && mval > 0.6) {
         res_color = MAGENTA;
     }
     return res_color;
