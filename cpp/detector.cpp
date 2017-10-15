@@ -247,10 +247,16 @@ color_t ToyDetector::detect_color(cv::Mat& roi) {
                                         return std::get<1>(t1) < std::get<1>(t2);
                                     });
     double max_val = std::get<1>(max_tup);
+
+    // FIXME:
+    color_t res_color = UNKNOWN;
     if (max_val > 0.95f) {
-        return std::get<0>(max_tup);
+        res_color = std::get<0>(max_tup);
     }
-    return UNKNOWN;
+    if (res_color == BLUE && mval > 0.6) {
+        res_color = MAGENTA;
+    }
+    return res_color;
 }
 
 std::vector<cv::Point> ToyDetector::check_cnt_contain(std::vector<std::vector<cv::Point> >& cnts) {
