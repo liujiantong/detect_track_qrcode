@@ -45,7 +45,7 @@ std::vector<std::vector<cv::Point> > ToyDetector::find_code_contours(cv::Mat& gr
 }
 
 
-std::vector<color_t> ToyDetector::detect_color_from_contours(cv::Mat& img,
+toy_code_t ToyDetector::detect_color_from_contours(cv::Mat& img,
     std::vector<std::vector<cv::Point> >& cnts,
     std::vector<cv::Point>& out_cnt) {
 
@@ -60,35 +60,32 @@ std::vector<color_t> ToyDetector::detect_color_from_contours(cv::Mat& img,
     logger->debug("square_cnts.size:{}", square_cnts.size());
 
     if (square_cnts.empty()) {
-        std::vector<color_t> colors;
-        return colors;
+        toy_code_t toycode = {};
+        return toycode;
     }
 
     cv::Mat out_dst;
     std::vector<cv::Point> bound_cnt = check_cnt_contain(square_cnts);
-    auto colors = detect_color_in(img, bound_cnt, out_dst);
+    auto toycode = detect_color_in(img, bound_cnt, out_dst);
     // fill out_cnt
     out_cnt.assign(bound_cnt.begin(), bound_cnt.end());
-    logger->debug("colors.size:{}", colors.size());
 
-    return colors;
+    return toycode;
 }
 
 
-std::vector<color_t> ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst) {
+toy_code_t ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst) {
     auto logger = spd::get("toy");
-
-    std::vector<color_t> colors;
 
     int half_block_size = _block_size / 2;
     cv::Rect r = cv::boundingRect(cnt);
     if (r.width < half_block_size || r.height < half_block_size) {
-        return colors;
+        toy_code_t toycode = {};
+        return toycode;
     }
 
     // FIXME: find triangle here
 
-    //* TODO: findHomography
     cv::Mat warped_dst;
     std::vector<cv::Point2f> roi_pnts;
     std::vector<cv::Point2f> dst_pnts(4);
@@ -129,10 +126,10 @@ std::vector<color_t> ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::
     cv::imwrite("roi4.png", roi4);
     */
 
-    colors.push_back(detect_color(roi1));
-    colors.push_back(detect_color(roi2));
-    colors.push_back(detect_color(roi3));
-    colors.push_back(detect_color(roi4));
+    std::array<color_t, 4> colors = {{
+        detect_color(roi1), detect_color(roi2),
+        detect_color(roi3), detect_color(roi4)
+    }};
 
     int color_idx = -1;
     for (int i=0; i<colors.size(); i++) {
@@ -142,23 +139,24 @@ std::vector<color_t> ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::
         }
     }
 
-    // FIXME
+    // FIXME: bug here
     if (color_idx != -1) {
         std::rotate(colors.begin(), colors.begin() + color_idx, colors.end());
         std::rotate(shapes.begin(), shapes.begin() + color_idx, shapes.end());
     }
 
+    // FIXME
     for (auto s : shapes) {
         logger->info("shape:{}", s);
     }
 
-    //return std::make_tuple(colors, dst);
-    return colors;
+    // TODO:
+    toy_code_t toycode = {colors, shapes};
+    return toycode;
 }
 
 
-// FIXME:
-std::vector<shape_t> ToyDetector::detect_shape_in(cv::Mat& roi) {
+std::array<shape_t, 4> ToyDetector::detect_shape_in(cv::Mat& roi) {
     cv::Mat gray, blurred, edged;
     cv::cvtColor(roi, gray, CV_BGR2GRAY);
     cv::medianBlur(gray, blurred, 3);
@@ -170,10 +168,10 @@ std::vector<shape_t> ToyDetector::detect_shape_in(cv::Mat& roi) {
     cv::Mat roi3 = edged(cv::Rect(half_size.width, half_size.height, half_size.width, half_size.height));
     cv::Mat roi4 = edged(cv::Rect(0, half_size.height, half_size.width, half_size.height));
 
-    std::vector<shape_t> shapes = {
+    std::array<shape_t, 4> shapes = {{
         detect_shape(roi1), detect_shape(roi2),
         detect_shape(roi3), detect_shape(roi4)
-    };
+    }};
 
     return shapes;
 }

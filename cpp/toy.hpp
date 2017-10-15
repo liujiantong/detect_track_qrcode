@@ -68,10 +68,14 @@ typedef enum shape_e {
     HEXAGON
 } shape_t;
 
-typedef struct color_code_s {
+typedef struct toy_code_s {
     std::array<color_t, 4> colors;
     std::array<shape_t, 4> shapes;
+
     int encode() {
+        if (colors.empty() || shapes.empty())
+            return 0;
+
         int n_colors = 6, n_shapes = 3;
         int base = n_colors * n_shapes;
 
@@ -89,7 +93,12 @@ typedef struct color_code_s {
         }
         return c0 * std::pow(base, 3) + code;
     }
-} color_code_t;
+
+    std::string to_string() {
+        // TODO:
+        return "";
+    }
+} toy_code_t;
 
 
 #endif // __TOY_HPP__

@@ -21,7 +21,7 @@ direct_pos_t calc_direct(cv::Point head, cv::Point tail);
 std::string join(std::vector<std::string>& v);
 std::string toy_direct_name(direct_t d);
 std::string color_name(color_t c);
-std::vector<std::string> get_color_names(std::vector<color_t>& colors);
+std::vector<std::string> get_color_names(std::array<color_t, 4>& colors);
 
 shape_t detect_shape(cv::Mat& img);
 

@@ -43,8 +43,8 @@ public:
         return _tracker_centers.back();
     };
 
-    std::vector<color_t> get_toy_colors() {
-        return _toy_colors;
+    toy_code_t get_toy_code() {
+        return _toy_code;
     };
 
     void set_tracking_callback(tracking_callback cb) {
@@ -68,7 +68,7 @@ private:
 
     cv::Rect _united_fg;
     std::vector<cv::Point> _toy_contour;
-    std::vector<color_t> _toy_colors;
+    toy_code_t _toy_code;
     float _toy_radius;
     cv::Mat _measurement;
     cv::Mat _toy_prediction;
@@ -97,7 +97,7 @@ private:
 
     void clear_debug_things() {
         _toy_radius = 0;
-        _toy_colors.clear();
+        _toy_code = {};
         _toy_contour.clear();
         _tracker_centers.clear();
         _toy_prediction = cv::Mat();

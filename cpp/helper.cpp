@@ -175,7 +175,7 @@ std::string color_name(color_t c) {
     }
 }
 
-std::vector<std::string> get_color_names(std::vector<color_t>& colors) {
+std::vector<std::string> get_color_names(std::array<color_t, 4>& colors) {
     std::vector<std::string> v;
     v.reserve(colors.size());
     std::transform(colors.begin(), colors.end(),  std::back_inserter(v), [](color_t c) {

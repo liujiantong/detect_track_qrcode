@@ -62,10 +62,10 @@ int main(int argc, char const *argv[]) {
         logger->debug("wb created");
 
         std::vector<cv::Point> cnt;
-        std::vector<color_t> colors = detector.detect_color_from_contours(image, founds, cnt);
-        logger->debug("colors.size:{}, cnt.size:{}", colors.size(), cnt.size());
+        toy_code_t code = detector.detect_color_from_contours(image, founds, cnt);
+        logger->debug("colors.size:{}, cnt.size:{}", code.colors.size(), cnt.size());
 
-        auto colors_str = get_color_names(colors);
+        auto colors_str = get_color_names(code.colors);
         logger->debug("colors:{}", join(colors_str));
 
         if (!cnt.empty()) {

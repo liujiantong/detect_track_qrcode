@@ -16,9 +16,9 @@ public:
     std::vector<std::vector<cv::Point> > find_code_contours(cv::Mat& gray);
     std::tuple<bool, std::vector<cv::Point> > detect_square(std::vector<cv::Point>& cnt);
     static color_t detect_color(cv::Mat& roi);
-    std::vector<color_t> detect_color_in(cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst);
-    std::vector<shape_t> detect_shape_in(cv::Mat& roi_edged);
-    std::vector<color_t> detect_color_from_contours(cv::Mat& img,
+    toy_code_t detect_color_in(cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst);
+    std::array<shape_t, 4> detect_shape_in(cv::Mat& roi_edged);
+    toy_code_t detect_color_from_contours(cv::Mat& img,
         std::vector<std::vector<cv::Point> >& cnts,
         std::vector<cv::Point>& out_cnt);
 
