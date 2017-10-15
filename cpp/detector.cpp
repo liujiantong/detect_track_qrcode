@@ -247,7 +247,7 @@ color_t ToyDetector::detect_color(cv::Mat& roi) {
                                         return std::get<1>(t1) < std::get<1>(t2);
                                     });
     double max_val = std::get<1>(max_tup);
-    if (max_val > 1.0f) {
+    if (max_val > 0.95f) {
         return std::get<0>(max_tup);
     }
     return UNKNOWN;

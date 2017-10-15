@@ -43,16 +43,19 @@ int main(int argc, char const *argv[]) {
 
     cv::Mat gray;
     cv::Mat image = cv::imread("/Users/liutao/mywork/detect_track_qrcode/image/pic04.jpg");
-    // cv::Mat roi3 = cv::imread("roi3.png");
+    cv::Mat roi = cv::imread("/Users/liutao/mywork/detect_track_qrcode/image/magenta.png");
 
     cv::Size size = get_frame_size(cv::Size(image.cols, image.rows), 800);
     cv::resize(image, image, size, cv::INTER_AREA);
-    cv::imwrite("resized.png", image);
+    // cv::imwrite("resized.png", image);
 
     logger->debug("cols:{}, rows:{}", image.cols, image.rows);
     cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
 
     ToyDetector detector;
+    color_t roi_color = detector.detect_color(roi);
+    logger->debug("roi_color:{}, name:{}", roi_color, color_name(roi_color));
+
     std::vector<std::vector<cv::Point> > founds = detector.find_code_contours(gray);
     logger->debug("founds.size:{}", founds.size());
 
