@@ -50,14 +50,14 @@ H = 300°..360° => RED
 
 
 typedef enum color_e {
-    UNKNOWN = -2,
-    WHITE = -1,
+    UNKNOWN = -1,
     RED = 0,
     YELLOW,
     GREEN,
     CYAN,
     BLUE,
-    MAGENTA
+    MAGENTA,
+    WHITE
 } color_t;
 
 typedef enum shape_e {
@@ -73,18 +73,19 @@ typedef struct toy_code_s {
     std::array<shape_t, 4> shapes;
 
     int encode() {
-        if (colors.empty() || shapes.empty())
-            return 0;
+        if (colors.empty() || shapes.empty()) {
+            return -1;
+        }
 
         int n_colors = 6, n_shapes = 3;
         int base = n_colors * n_shapes;
 
         int code = 0;
         int c0 = colors[0];
-        if (c0 < RED || c0 > MAGENTA) return -1;
+        if (c0 < RED || c0 > WHITE) return -1;
 
         for (int i=1; i<colors.size(); i++) {
-            if ((colors[i] < RED || colors[i] > MAGENTA) ||
+            if ((colors[i] < RED || colors[i] > WHITE) ||
                 (shapes[i] < TRIANGLE || shapes[i] > HEXAGON)) {
                 return -1;
             }
@@ -92,11 +93,6 @@ typedef struct toy_code_s {
             code += (c + std::pow(n_colors, s)) * std::pow(base, (i - 1));
         }
         return c0 * std::pow(base, 3) + code;
-    }
-
-    std::string to_string() {
-        // TODO:
-        return "";
     }
 } toy_code_t;
 

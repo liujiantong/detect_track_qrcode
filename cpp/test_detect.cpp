@@ -64,9 +64,7 @@ int main(int argc, char const *argv[]) {
         std::vector<cv::Point> cnt;
         toy_code_t code = detector.detect_color_from_contours(image, founds, cnt);
         logger->debug("colors.size:{}, cnt.size:{}", code.colors.size(), cnt.size());
-
-        auto colors_str = get_color_names(code.colors);
-        logger->debug("colors:{}", join(colors_str));
+        logger->debug("toy_code:{}", toy_code_str(code));
 
         if (!cnt.empty()) {
             std::vector<std::vector<cv::Point> > cnts = {cnt};

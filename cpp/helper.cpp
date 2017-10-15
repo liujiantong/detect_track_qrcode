@@ -127,7 +127,7 @@ shape_t detect_shape(cv::Mat& edged) {
 
 std::string join(std::vector<std::string>& v) {
     std::ostringstream imploded;
-    std::copy(v.begin(), v.end(), std::ostream_iterator<std::string>(imploded, " "));
+    std::copy(v.cbegin(), v.cend(), std::ostream_iterator<std::string>(imploded, " "));
     return imploded.str();
 }
 
@@ -151,6 +151,21 @@ std::string toy_direct_name(direct_t d) {
             return "EAST_SOUTH";
         default:
             return "UNKNOWN";
+    }
+}
+
+std::string shape_name(shape_t s) {
+    switch (s) {
+        case TRIANGLE:
+            return "triangle";
+        case SQUARE:
+            return "square";
+        case PENTAGON:
+            return "pentagon";
+        case HEXAGON:
+            return "hexagon";
+        default:
+            return "unknown";
     }
 }
 
@@ -178,8 +193,29 @@ std::string color_name(color_t c) {
 std::vector<std::string> get_color_names(std::array<color_t, 4>& colors) {
     std::vector<std::string> v;
     v.reserve(colors.size());
-    std::transform(colors.begin(), colors.end(),  std::back_inserter(v), [](color_t c) {
+    std::transform(colors.cbegin(), colors.cend(),  std::back_inserter(v), [](color_t c) {
         return color_name(c);
     });
     return v;
+}
+
+std::vector<std::string> get_shape_names(std::array<shape_t, 4>& shapes) {
+    std::vector<std::string> v;
+    v.reserve(shapes.size());
+    std::transform(shapes.cbegin(), shapes.cend(),  std::back_inserter(v), [](shape_t s) {
+        return shape_name(s);
+    });
+    return v;
+}
+
+std::string toy_code_str(toy_code_t& code) {
+    // std::cout << code.shapes.empty() << "," << code.colors.empty() << std::endl;
+    if (code.encode() < 0)
+        return std::string("shapes[], colors:[]");
+
+    auto colors = get_color_names(code.colors);
+    std::string color_names = join(colors);
+    auto shapes = get_shape_names(code.shapes);
+    std::string shape_names = join(shapes);
+    return "shapes:[" + shape_names + "], colors:[" + color_names + "]";
 }

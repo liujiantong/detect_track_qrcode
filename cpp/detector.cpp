@@ -145,11 +145,6 @@ toy_code_t ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::Point>& cn
         std::rotate(shapes.begin(), shapes.begin() + color_idx, shapes.end());
     }
 
-    // FIXME
-    for (auto s : shapes) {
-        logger->info("shape:{}", s);
-    }
-
     // TODO:
     toy_code_t toycode = {colors, shapes};
     return toycode;
