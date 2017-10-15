@@ -84,8 +84,6 @@ toy_code_t ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::Point>& cn
         return toycode;
     }
 
-    // FIXME: find triangle here
-
     cv::Mat warped_dst;
     std::vector<cv::Point2f> roi_pnts;
     std::vector<cv::Point2f> dst_pnts(4);
@@ -119,7 +117,7 @@ toy_code_t ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::Point>& cn
     cv::Mat roi3 = warped_dst(cv::Rect(half_size.width, half_size.height, half_size.width, half_size.height));
     cv::Mat roi4 = warped_dst(cv::Rect(0, half_size.height, half_size.width, half_size.height));
 
-    /* FIXME: for debug
+    /* NOTE: for debug
     cv::imwrite("roi1.png", roi1);
     cv::imwrite("roi2.png", roi2);
     cv::imwrite("roi3.png", roi3);
@@ -131,21 +129,20 @@ toy_code_t ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::Point>& cn
         detect_color(roi3), detect_color(roi4)
     }};
 
-    int color_idx = -1;
-    for (int i=0; i<colors.size(); i++) {
-        if (colors[i] == WHITE) {
-            color_idx = i;
+    int shp_idx = -1;
+    for (int i=0; i<shapes.size(); i++) {
+        if (shapes[i] == TRIANGLE) {
+            shp_idx = i;
             break;
         }
     }
 
-    // FIXME: bug here
-    if (color_idx != -1) {
-        std::rotate(colors.begin(), colors.begin() + color_idx, colors.end());
-        std::rotate(shapes.begin(), shapes.begin() + color_idx, shapes.end());
+    // FIXME: find triangle here
+    if (shp_idx != -1) {
+        std::rotate(shapes.begin(), shapes.begin() + shp_idx, shapes.end());
+        std::rotate(colors.begin(), colors.begin() + shp_idx, colors.end());
     }
 
-    // TODO:
     toy_code_t toycode = {colors, shapes};
     return toycode;
 }

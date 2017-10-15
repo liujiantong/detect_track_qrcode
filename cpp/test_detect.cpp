@@ -42,7 +42,7 @@ int main(int argc, char const *argv[]) {
     logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%l] %v");
 
     cv::Mat gray;
-    cv::Mat image = cv::imread("/Users/liutao/mywork/detect_track_qrcode/image/pic01.jpg");
+    cv::Mat image = cv::imread("/Users/liutao/mywork/detect_track_qrcode/image/pic04.jpg");
     // cv::Mat roi3 = cv::imread("roi3.png");
 
     cv::Size size = get_frame_size(cv::Size(image.cols, image.rows), 800);
