@@ -22,8 +22,7 @@ void tracking_cb(MockTracker* tracker) {
     cv::Mat* debug_frame = tracker->get_debug_frame();
     cv::Point toy_center = tracker->get_last_toy_center();
     auto code = tracker->get_toy_code();
-    auto colors_str = get_color_names(code.colors);
-    logger->info("toy colors:[{}]", join(colors_str));
+    logger->info("toy code:{}", toy_code_str(code));
 
     cv::imshow("debug frame", *debug_frame);
 
