@@ -45,7 +45,7 @@ std::vector<std::vector<cv::Point> > ToyDetector::find_code_contours(cv::Mat& gr
 }
 
 
-toy_code_t ToyDetector::detect_color_from_contours(cv::Mat& img,
+toy_code_t ToyDetector::detect_code_from_contours(cv::Mat& img,
     std::vector<std::vector<cv::Point> >& cnts,
     std::vector<cv::Point>& out_cnt) {
 
@@ -66,7 +66,7 @@ toy_code_t ToyDetector::detect_color_from_contours(cv::Mat& img,
 
     cv::Mat out_dst;
     std::vector<cv::Point> bound_cnt = check_cnt_contain(square_cnts);
-    auto toycode = detect_color_in(img, bound_cnt, out_dst);
+    auto toycode = detect_code_in(img, bound_cnt, out_dst);
     // fill out_cnt
     out_cnt.assign(bound_cnt.begin(), bound_cnt.end());
 
@@ -74,7 +74,7 @@ toy_code_t ToyDetector::detect_color_from_contours(cv::Mat& img,
 }
 
 
-toy_code_t ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst) {
+toy_code_t ToyDetector::detect_code_in(cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst) {
     auto logger = spd::get("toy");
 
     int half_block_size = _block_size / 2;
@@ -200,6 +200,7 @@ std::tuple<bool, std::vector<cv::Point> > ToyDetector::detect_square(std::vector
 }
 
 
+// FIXME: color detection
 color_t ToyDetector::detect_color(cv::Mat& roi) {
     auto logger = spd::get("toy");
 

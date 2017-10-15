@@ -112,7 +112,7 @@ void MockTracker::track() {
                 _wb->balanceWhite(roi_image, roi_image);
 
                 std::vector<cv::Point> cnt;
-                auto code = detector.detect_color_from_contours(roi_image, founds, cnt);
+                auto code = detector.detect_code_from_contours(roi_image, founds, cnt);
 
                 if (!cnt.empty()) {
                     logger->info("I found color square");
