@@ -137,7 +137,7 @@ toy_code_t ToyDetector::detect_color_in(cv::Mat& img, std::vector<cv::Point>& cn
         }
     }
 
-    // FIXME: find triangle here
+    // find triangle here
     if (shp_idx != -1) {
         std::rotate(shapes.begin(), shapes.begin() + shp_idx, shapes.end());
         std::rotate(colors.begin(), colors.begin() + shp_idx, colors.end());
@@ -228,12 +228,15 @@ color_t ToyDetector::detect_color(cv::Mat& roi) {
     cv::normalize(hist, hist, 0.0, 1.0, cv::NORM_MINMAX);
 
     double rval = sum_histogram(hist, RED_RANGE1) + sum_histogram(hist, RED_RANGE2);
+    double yval = sum_histogram(hist, YELLOW_RANGE);
     double gval = sum_histogram(hist, GREEN_RANGE);
+    double cval = sum_histogram(hist, CYAN_RANGE);
     double bval = sum_histogram(hist, BLUE_RANGE);
+    double mval = sum_histogram(hist, MAGENTA_RANGE);
 
     // find max value
     std::vector<std::tuple<color_t, double> > tups = {
-        {RED, rval}, {GREEN, gval}, {BLUE, bval}
+        {RED, rval}, {YELLOW, yval}, {GREEN, gval}, {CYAN, cval}, {BLUE, bval}, {MAGENTA, mval}
     };
     auto max_tup = *std::max_element(tups.begin(), tups.end(),
                                      [](const std::tuple<color_t, double>& t1,
