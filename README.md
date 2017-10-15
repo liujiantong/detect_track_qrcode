@@ -1,8 +1,7 @@
-# detect_track_qrcode
+# Detect and Track QR Code
 
 
-
-## install dependencies
+## Install dependencies
 
 ### [opencv-3.3.0 + contrib](https://opencv.org/)
 
@@ -10,13 +9,13 @@
 
 ### [cpputest](http://cpputest.github.io/)
 
-### zbar
+### zbar (optional)
 ```
 brew install zbar
 LDFLAGS=-L/usr/local/lib/ CPATH=/usr/local/include/ pip install git+https://github.com/npinchot/zbar.git
 ```
 
-## build
+## Build
 ```
 mkdir build
 cd build/
