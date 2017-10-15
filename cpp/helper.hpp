@@ -23,8 +23,11 @@ std::string join(std::vector<std::string>& v);
 std::string toy_direct_name(direct_t d);
 std::string color_name(color_t c);
 std::string shape_name(shape_t s);
+
 std::vector<std::string> get_color_names(std::array<color_t, 4>& colors);
+std::string color_names_str(std::array<color_t, 4>& colors);
 std::vector<std::string> get_shape_names(std::array<shape_t, 4>& shapes);
+std::string shape_names_str(std::array<shape_t, 4>& shapes);
 
 shape_t detect_shape(cv::Mat& img);
 std::string toy_code_str(toy_code_t& code);

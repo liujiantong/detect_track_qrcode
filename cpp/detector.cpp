@@ -57,7 +57,7 @@ toy_code_t ToyDetector::detect_code_from_contours(cv::Mat& img,
             square_cnts.push_back(std::get<1>(result));
         }
     }
-    logger->debug("square_cnts.size:{}", square_cnts.size());
+    logger->info("square_cnts.size:{}", square_cnts.size());
 
     if (square_cnts.empty()) {
         toy_code_t toycode = {};
@@ -77,8 +77,10 @@ toy_code_t ToyDetector::detect_code_from_contours(cv::Mat& img,
 toy_code_t ToyDetector::detect_code_in(cv::Mat& img, std::vector<cv::Point>& cnt, cv::Mat& out_dst) {
     auto logger = spd::get("toy");
 
-    int half_block_size = _block_size / 2;
+    int half_block_size = _block_size / 4;
     cv::Rect r = cv::boundingRect(cnt);
+    logger->debug("r:[{}, {}], half_block_size:{}", r.width, r.height, half_block_size);
+
     if (r.width < half_block_size || r.height < half_block_size) {
         toy_code_t toycode = {};
         return toycode;
@@ -107,7 +109,8 @@ toy_code_t ToyDetector::detect_code_in(cv::Mat& img, std::vector<cv::Point>& cnt
     // for debug
     // cv::imwrite("warped_dst.png", warped_dst);
 
-    auto shapes = detect_shape_in(warped_dst);
+    std::array<shape_t, 4> shapes = detect_shape_in(warped_dst);
+    logger->info("calc shapes: {}", shape_names_str(shapes));
 
     cv::Size half_size(warped_size.width/2, warped_size.height/2);
     logger->debug("half_size:[{}, {}]", half_size.width, half_size.height);
@@ -128,6 +131,7 @@ toy_code_t ToyDetector::detect_code_in(cv::Mat& img, std::vector<cv::Point>& cnt
         detect_color(roi1), detect_color(roi2),
         detect_color(roi3), detect_color(roi4)
     }};
+    logger->info("calc colors: {}", color_names_str(colors));
 
     int shp_idx = -1;
     for (int i=0; i<shapes.size(); i++) {
@@ -142,6 +146,7 @@ toy_code_t ToyDetector::detect_code_in(cv::Mat& img, std::vector<cv::Point>& cnt
         std::rotate(shapes.begin(), shapes.begin() + shp_idx, shapes.end());
         std::rotate(colors.begin(), colors.begin() + shp_idx, colors.end());
     }
+    logger->info("rotated shapes and colors");
 
     toy_code_t toycode = {colors, shapes};
     return toycode;

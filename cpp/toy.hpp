@@ -68,6 +68,14 @@ typedef enum shape_e {
     HEXAGON
 } shape_t;
 
+
+/**
+ * block shapes: 4, color types: 6
+ * block number: 4
+ * start block:  shape:[TRIANGLE], color:[ALL].
+ *               TRIANGLE only used in start block
+ * block1:3:     shape:[SQUARE, PENTAGON, HEXAGON], color:[ALL]
+ */
 typedef struct toy_code_s {
     std::array<color_t, 4> colors;
     std::array<shape_t, 4> shapes;
@@ -80,19 +88,25 @@ typedef struct toy_code_s {
         int n_colors = 6, n_shapes = 3;
         int base = n_colors * n_shapes;
 
-        int code = 0;
+        int code_sum = 0;
         int c0 = colors[0];
         if (c0 < RED || c0 > WHITE) return -1;
 
-        for (int i=1; i<colors.size(); i++) {
-            if ((colors[i] < RED || colors[i] > WHITE) ||
-                (shapes[i] < TRIANGLE || shapes[i] > HEXAGON)) {
+        // blocks == colors == 4
+        for (int b=1; b<4; b++) { // block loop
+            if ((colors[b] < RED || colors[b] > WHITE) ||
+                (shapes[b] < TRIANGLE || shapes[b] > HEXAGON)) {
                 return -1;
             }
-            int c = colors[i], s = shapes[i]-3;
-            code += (c + std::pow(n_colors, s)) * std::pow(base, (i - 1));
+
+            int c = colors[b], s = shapes[b]-3;
+            // the value of a given block (shape as row and color as cols)
+            int block_val = c + std::pow(n_colors, s);
+            code_sum += block_val * std::pow(base, (b-1));
         }
-        return c0 * std::pow(base, 3) + code;
+
+        int start_block_val = c0 * std::pow(base, 3);
+        return start_block_val + code_sum;
     }
 } toy_code_t;
 

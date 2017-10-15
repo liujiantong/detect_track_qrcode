@@ -9,32 +9,6 @@
 
 namespace spd = spdlog;
 
-
-#if 0
-void calc_color(cv::Mat& img) {
-    auto logger = spd::get("toy");
-
-    cv::Mat hsv, mask, hist;
-    cv::cvtColor(img, hsv, cv::COLOR_BGR2HSV);
-    cv::inRange(hsv, cv::Scalar(0, 20, 0), cv::Scalar(180, 255, 255), mask);
-
-    int hsize = 180;
-    int channels[] = {0};
-    float hue_range[] = { 0.0f, 180.0f };
-    const float* ranges[] = { hue_range };
-
-    cv::calcHist(&hsv, 1, channels, mask, hist, 1, &hsize, ranges, true);
-    cv::normalize(hist, hist, 0.0, 1.0, cv::NORM_MINMAX);
-
-    double rval = sum_histogram(hist, RED_RANGE1) + sum_histogram(hist, RED_RANGE2);
-    double gval = sum_histogram(hist, GREEN_RANGE);
-    double bval = sum_histogram(hist, BLUE_RANGE);
-
-    logger->info("r:{}, g:{}, b:{}", rval, gval, bval);
-}
-#endif
-
-
 int main(int argc, char const *argv[]) {
     auto logger = spd::stdout_color_mt("toy");
     // auto logger = spd::daily_logger_mt("toy", "toy.log", 0, 0);
@@ -45,6 +19,7 @@ int main(int argc, char const *argv[]) {
     cv::Mat image = cv::imread("/Users/liutao/mywork/detect_track_qrcode/image/pic04.jpg");
     cv::Mat m_roi = cv::imread("/Users/liutao/mywork/detect_track_qrcode/image/magenta.png");
     cv::Mat c_roi = cv::imread("/Users/liutao/mywork/detect_track_qrcode/image/cyan.png");
+    cv::Mat y_roi = cv::imread("/Users/liutao/mywork/detect_track_qrcode/image/yellow.png");
 
     cv::Size size = get_frame_size(cv::Size(image.cols, image.rows), 800);
     cv::resize(image, image, size, cv::INTER_AREA);
@@ -59,6 +34,8 @@ int main(int argc, char const *argv[]) {
     logger->debug("mroi_color:{}, name:{}", mroi_color, color_name(mroi_color));
     color_t croi_color = detector.detect_color(c_roi);
     logger->debug("croi_color:{}, name:{}", croi_color, color_name(croi_color));
+    color_t yroi_color = detector.detect_color(y_roi);
+    logger->debug("yroi_color:{}, name:{}", yroi_color, color_name(yroi_color));
 
     std::vector<std::vector<cv::Point> > founds = detector.find_code_contours(gray);
     logger->debug("founds.size:{}", founds.size());
@@ -71,7 +48,7 @@ int main(int argc, char const *argv[]) {
         std::vector<cv::Point> cnt;
         toy_code_t code = detector.detect_code_from_contours(image, founds, cnt);
         logger->debug("colors.size:{}, cnt.size:{}", code.colors.size(), cnt.size());
-        logger->debug("toy_code:{}", toy_code_str(code));
+        logger->info("toy_code:{}, code:{}", toy_code_str(code), code.encode());
 
         if (!cnt.empty()) {
             std::vector<std::vector<cv::Point> > cnts = {cnt};

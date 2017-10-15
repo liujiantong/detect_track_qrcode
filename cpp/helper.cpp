@@ -128,7 +128,9 @@ shape_t detect_shape(cv::Mat& edged) {
 std::string join(std::vector<std::string>& v) {
     std::ostringstream imploded;
     std::copy(v.cbegin(), v.cend(), std::ostream_iterator<std::string>(imploded, " "));
-    return imploded.str();
+    auto rs = imploded.str();
+    rs.pop_back();
+    return rs;
 }
 
 std::string toy_direct_name(direct_t d) {
@@ -199,6 +201,11 @@ std::vector<std::string> get_color_names(std::array<color_t, 4>& colors) {
     return v;
 }
 
+std::string color_names_str(std::array<color_t, 4>& colors) {
+    auto names = get_color_names(colors);
+    return join(names);
+}
+
 std::vector<std::string> get_shape_names(std::array<shape_t, 4>& shapes) {
     std::vector<std::string> v;
     v.reserve(shapes.size());
@@ -206,6 +213,11 @@ std::vector<std::string> get_shape_names(std::array<shape_t, 4>& shapes) {
         return shape_name(s);
     });
     return v;
+}
+
+std::string shape_names_str(std::array<shape_t, 4>& shapes) {
+    auto names = get_shape_names(shapes);
+    return join(names);
 }
 
 std::string toy_code_str(toy_code_t& code) {

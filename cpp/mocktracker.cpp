@@ -111,11 +111,12 @@ void MockTracker::track() {
             if (!founds.empty()) {
                 _wb->balanceWhite(roi_image, roi_image);
 
+                // FIXME: code error here
                 std::vector<cv::Point> cnt;
                 auto code = detector.detect_code_from_contours(roi_image, founds, cnt);
 
                 if (!cnt.empty()) {
-                    logger->info("I found color square");
+                    logger->info("I found color square. code:{}", toy_code_str(code));
                     _track_window = cv::boundingRect(_toy_contour);
 
                     _toy_contour.clear();
