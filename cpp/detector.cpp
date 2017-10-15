@@ -235,6 +235,8 @@ color_t ToyDetector::detect_color(cv::Mat& roi) {
     double bval = sum_histogram(hist, BLUE_RANGE);
     double mval = sum_histogram(hist, MAGENTA_RANGE);
 
+    logger->debug("r:{}, y:{}, g:{}, c:{}, b::{}, m:{}", rval, yval, gval, cval, bval, mval);
+
     // find max value
     std::vector<std::tuple<color_t, double> > tups = {
         {RED, rval}, {YELLOW, yval}, {GREEN, gval}, {CYAN, cval}, {BLUE, bval}, {MAGENTA, mval}
