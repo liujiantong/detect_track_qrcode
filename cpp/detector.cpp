@@ -260,7 +260,7 @@ color_t ToyDetector::detect_color(cv::Mat& roi) {
         if ((yval > 0.41 && max_val < 4) && (res_color == RED || res_color == GREEN)) {
             res_color = YELLOW;
         }
-        else if ((cval > 0.41 && max_val < 4) && (res_color == BLUE || res_color == GREEN)) {
+        else if ((cval > 0.41 && max_val < 4) && (res_color == BLUE /*|| res_color == GREEN*/)) {
             res_color = CYAN;
         }
         else if ((mval > 0.41 && max_val < 4) && (res_color == RED || res_color == BLUE)) {
