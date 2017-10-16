@@ -131,7 +131,7 @@ toy_code_t ToyDetector::detect_code_in(cv::Mat& img, std::vector<cv::Point>& cnt
         detect_color(roi1), detect_color(roi2),
         detect_color(roi3), detect_color(roi4)
     }};
-    logger->info("calc colors: {}", color_names_str(colors));
+    logger->debug("calc colors: {}", color_names_str(colors));
 
     int shp_idx = -1;
     for (int i=0; i<shapes.size(); i++) {
@@ -146,7 +146,6 @@ toy_code_t ToyDetector::detect_code_in(cv::Mat& img, std::vector<cv::Point>& cnt
         std::rotate(shapes.begin(), shapes.begin() + shp_idx, shapes.end());
         std::rotate(colors.begin(), colors.begin() + shp_idx, colors.end());
     }
-    logger->info("rotated shapes and colors");
 
     toy_code_t toycode = {colors, shapes};
     return toycode;
@@ -240,7 +239,7 @@ color_t ToyDetector::detect_color(cv::Mat& roi) {
     double bval = sum_histogram(hist, BLUE_RANGE);
     double mval = sum_histogram(hist, MAGENTA_RANGE);
 
-    logger->debug("r:{}, y:{}, g:{}, c:{}, b::{}, m:{}", rval, yval, gval, cval, bval, mval);
+    logger->info("r:{}, y:{}, g:{}, c:{}, b::{}, m:{}", rval, yval, gval, cval, bval, mval);
 
     // find max value
     std::vector<std::tuple<color_t, double> > tups = {
@@ -253,12 +252,14 @@ color_t ToyDetector::detect_color(cv::Mat& roi) {
                                     });
     double max_val = std::get<1>(max_tup);
 
-    // FIXME:
     color_t res_color = UNKNOWN;
     if (max_val > 0.95f) {
         res_color = std::get<0>(max_tup);
     }
-    if (res_color == BLUE && max_val < 2.0 && mval > 0.6) {
+
+    // FIXME: color detection
+    if ((res_color == BLUE && max_val < 2.0 && mval > 0.6) ||
+        (res_color == CYAN && max_val < 2.0 && mval > 0.6)) {
         res_color = MAGENTA;
     }
     return res_color;

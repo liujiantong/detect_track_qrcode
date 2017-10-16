@@ -224,7 +224,7 @@ cv::Rect MockTracker::camshift_track(cv::Mat& hsv, cv::Mat& mask, cv::Rect track
     backproj &= mask;
     // cv::RotatedRect track_box ignored
     cv::CamShift(backproj, track_win, cv::TermCriteria(cv::TermCriteria::EPS | cv::TermCriteria::COUNT, 10, 1 ));
-    logger->info("track_win.area:{}", track_win.area());
+    logger->debug("track_win.area:{}", track_win.area());
 
     if (track_win.area() <= 9) {
         // TODO: lost target.
