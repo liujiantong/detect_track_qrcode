@@ -108,7 +108,7 @@ shape_t detect_shape(cv::Mat& edged) {
 
     double peri = cv::arcLength(cnt, true);
     std::vector<cv::Point> approx;
-    cv::approxPolyDP(cnt, approx, peri*0.03, true);
+    cv::approxPolyDP(cnt, approx, peri*0.05, true);
 
     int n_edge = approx.size();
     switch (n_edge) {

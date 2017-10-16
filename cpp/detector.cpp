@@ -255,13 +255,19 @@ color_t ToyDetector::detect_color(cv::Mat& roi) {
     color_t res_color = UNKNOWN;
     if (max_val > 0.95f) {
         res_color = std::get<0>(max_tup);
+
+        // FIXME: color detection
+        if ((yval > 0.41 && max_val < 4) && (res_color == RED || res_color == GREEN)) {
+            res_color = YELLOW;
+        }
+        else if ((cval > 0.41 && max_val < 4) && (res_color == BLUE || res_color == GREEN)) {
+            res_color = CYAN;
+        }
+        else if ((mval > 0.41 && max_val < 4) && (res_color == RED || res_color == BLUE)) {
+            res_color = MAGENTA;
+        }
     }
 
-    // FIXME: color detection
-    if ((res_color == BLUE && max_val < 2.0 && mval > 0.6) ||
-        (res_color == CYAN && max_val < 2.0 && mval > 0.6)) {
-        res_color = MAGENTA;
-    }
     return res_color;
 }
 

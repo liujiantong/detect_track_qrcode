@@ -4,6 +4,7 @@
 * easy as CV_PI right?
 */
 
+#include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
@@ -30,11 +31,24 @@ namespace {
              << "\texample: " << av[0] << " right%%02d.jpg" << endl;
     }
 
+    cv::Size get_frame_size(cv::Size size, unsigned max_width) {
+        if (size.width < max_width) {
+            return size;
+        }
+        double ratio = double(max_width) / size.width;
+        return cv::Size(max_width, (ratio * size.height));
+    }
+
     int process(VideoCapture& capture) {
         int n = 0;
         char filename[200];
         string window_name = "video | q or esc to quit";
         cout << "press space to save a picture. q or esc to quit" << endl;
+
+        int width = capture.get(cv::CAP_PROP_FRAME_WIDTH);
+        int height = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
+        cv::Size frame_size = get_frame_size(cv::Size(width, height), 1000);
+
         namedWindow(window_name, WINDOW_KEEPRATIO); //resizable window;
         Mat frame;
 
@@ -42,6 +56,8 @@ namespace {
             capture >> frame;
             if (frame.empty())
                 break;
+
+            cv::resize(frame, frame, frame_size, cv::INTER_AREA);
 
             imshow(window_name, frame);
             char key = (char)waitKey(30); //delay N millis, usually long enough to display and capture input

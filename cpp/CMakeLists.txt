@@ -22,14 +22,15 @@ set(TOY_LIB_SOURCE
 add_library( ${TOY_LIB_NAME} ${TOY_LIB_SOURCE} )
 target_link_libraries( ${TOY_LIB_NAME} ${OpenCV_LIBS} )
 
-# add_executable( video_cap video_cap.cpp )
 # add_executable( testapp testapp.cpp )
 # target_link_libraries( video_cap ${OpenCV_LIBS} )
 # target_link_libraries( testapp ${TOY_LIB_NAME} )
 
+add_executable( video_cap video_cap.cpp )
 add_executable( toyapp toyapp.cpp )
 add_executable( test_detect test_detect.cpp )
 
+target_link_libraries( video_cap ${OpenCV_LIBS} )
 target_link_libraries( toyapp ${TOY_LIB_NAME} )
 target_link_libraries( test_detect ${TOY_LIB_NAME} )
 
