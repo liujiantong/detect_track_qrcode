@@ -82,7 +82,7 @@ private:
     cv::Ptr<cv::xphoto::SimpleWB> _wb;
 
     void init_tracker();
-    void read_from_camera();
+    bool read_from_camera();
 
     void init_kalman();
     void kalman_track(cv::Point cntr);
@@ -90,7 +90,7 @@ private:
     void calc_hist(cv::Mat& img, cv::Rect rect);
     cv::Rect camshift_track(cv::Mat& hue, cv::Mat& mask, cv::Rect track_window);
 
-    void add_new_tracker_point(cv::Point pnt, int min_distance=10, int max_distance=1000);
+    void add_new_tracker_point(cv::Point pnt, int min_distance=10, int max_distance=1024);
     // cv::Rect compute_fg_bound_rect(const cv::Mat frm, cv::Size max_size, cv::Mat& kernel);
     cv::Rect compute_fg_bound_rect(const cv::Mat& frm, cv::Size max_size, cv::Mat& kernel);
     void draw_debug_things(bool draw_fg=false, bool draw_contour=true, bool draw_prediction=true);

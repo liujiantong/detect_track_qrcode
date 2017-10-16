@@ -51,13 +51,13 @@ bool SimpleCamera::init_camera() {
 
     if (_frame.empty()) {
         logger->error("_frame is empty!!!");
-        _ret = false;
+        _frm_ret = false;
     } else {
         _is_running = true;
-        _ret = true;
+        _frm_ret = true;
     }
 
-    return _ret;
+    return _frm_ret;
 } // SimpleCamera::init_camera
 
 
@@ -70,10 +70,11 @@ void SimpleCamera::update_camera() {
         if (!img_buf.empty()) {
             std::lock_guard<std::mutex> lg(v_mutex);
             img_buf.copyTo(_frame);
-            // logger->info("_frame.depth:{}", _frame.depth());
         } else {
+            // NOTE:
+            img_buf.copyTo(_frame);
+            _frm_ret = false;
             logger->warn("img_buf empty!!!");
-            _ret = false;
         }
 
         std::this_thread::yield();

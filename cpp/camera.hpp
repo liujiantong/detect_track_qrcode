@@ -10,12 +10,13 @@
 
 class SimpleCamera {
 public:
-    SimpleCamera(std::string& vsrc) : _ret(false), _video_src(vsrc), _is_running(false), _worker() {
+    SimpleCamera(std::string& vsrc) : _frm_ret(false), _video_src(vsrc), _is_running(false), _worker(), from_vfile(true) {
         // try to open string as a video file or image sequence
         _cam.open(_video_src);
         // if this fails, try to open a video camera, through the use of an integer param
         if (!_cam.isOpened()) {
             _cam.open(atoi(_video_src.c_str()));
+            from_vfile = false;
         }
     };
 
@@ -47,6 +48,14 @@ public:
         return _is_running;
     };
 
+    inline bool read_video_failed() {
+        return !_frm_ret;
+    };
+
+    inline bool from_video_file() {
+        return from_vfile;
+    };
+
 private:
     bool init_camera();
     void update_camera();
@@ -56,12 +65,13 @@ private:
     cv::Mat _frame;
     double _fps;
     cv::Size _frame_size;
-    bool _ret;
+    bool _frm_ret;
     std::string _video_src;
     bool _is_running;
     std::thread _worker;
 
     std::mutex v_mutex;
+    bool from_vfile;
 };
 
 #endif // __HIVE_CAMERA_HPP__

@@ -90,7 +90,10 @@ void MockTracker::track() {
     cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(9, 9));
 
     while (true) {
-        read_from_camera();
+        if (read_from_camera()) {
+            logger->info("video file empty, stop tracker.");
+            break;
+        }
 
         _frame.copyTo(_debug_frame);
         cv::Rect united_rect = compute_fg_bound_rect(_frame, _frame_size, kernel);
@@ -181,18 +184,23 @@ void MockTracker::track() {
 }
 
 
-void MockTracker::read_from_camera() {
+bool MockTracker::read_from_camera() {
     // concurrent frame write here.
     auto logger = spd::get("toy");
 
     cv::Mat frm = _camera->read();
     if (frm.empty()) {
         logger->error("read_from_camera: frm empty");
-        return;
+        if (_camera->from_video_file()) {
+            // if _camera read from file, stop it;
+            return true;
+        }
+        return false;
     }
 
     cv::resize(frm, _frame, _frame_size, cv::INTER_AREA);
     // cv::flip(_frame, _frame, 1);
+    return false;
 }
 
 
@@ -315,8 +323,8 @@ void MockTracker::add_new_tracker_point(cv::Point pnt, int min_distance, int max
                     _tracker_centers.pop_front();
                 }
             } else {
-                // distance too large, clear history points
-                _tracker_centers.clear();
+                // FIXME: distance too large, clear history points
+                _tracker_centers.erase(_tracker_centers.begin(), _tracker_centers.end()-1);
             }
             _tracker_centers.push_back(pnt);
         }
@@ -330,7 +338,11 @@ direct_pos_t MockTracker::get_direct_pos() {
         cv::Point head = _tracker_centers.back();
         return calc_direct(tail, head);
     } else {
-        logger->info("get_direct_pos: NONE_DERICT_POS");
-        return NONE_DERICT_POS;
+        logger->debug("get_direct_pos: NONE_DERICT_POS");
+        direct_pos_t dp = NONE_DERICT_POS;
+        if (!_tracker_centers.empty()) {
+            dp.position = _tracker_centers.back();
+        }
+        return dp;
     }
 }
