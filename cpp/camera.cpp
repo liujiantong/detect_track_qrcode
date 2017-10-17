@@ -41,6 +41,8 @@ bool SimpleCamera::init_camera() {
     _fps = _cam.get(cv::CAP_PROP_FPS);
     _frame_size.width = _cam.get(cv::CAP_PROP_FRAME_WIDTH);
     _frame_size.height = _cam.get(cv::CAP_PROP_FRAME_HEIGHT);
+    // limit the exposure time
+    // _cam.set(cv::CAP_PROP_EXPOSURE, 40);
     logger->debug("width:{}, height:{}", _frame_size.width, _frame_size.height);
 
     {
