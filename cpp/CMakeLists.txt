@@ -5,8 +5,10 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
 
 option( COMPILE_TESTS "Compile the tests" OFF )
 
+INCLUDE_DIRECTORIES( ../spdlog/include )
+
 find_package( PkgConfig REQUIRED )
-pkg_search_module( CPPUTEST REQUIRED cpputest>=3.8 )
+#pkg_search_module( CPPUTEST REQUIRED cpputest>=3.8 )
 
 project( detect_track_qrcode )
 find_package( OpenCV REQUIRED )
@@ -31,8 +33,8 @@ add_executable( toyapp toyapp.cpp )
 add_executable( test_detect test_detect.cpp )
 
 target_link_libraries( video_cap ${OpenCV_LIBS} )
-target_link_libraries( toyapp ${TOY_LIB_NAME} )
-target_link_libraries( test_detect ${TOY_LIB_NAME} )
+target_link_libraries( toyapp ${TOY_LIB_NAME} pthread )
+target_link_libraries( test_detect ${TOY_LIB_NAME} pthread )
 
 if( COMPILE_TESTS )
     add_executable( helper_unittest helper_unittest.cpp )

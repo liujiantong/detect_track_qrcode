@@ -3,6 +3,7 @@
 
 #include <numeric>
 #include <cmath>
+#include <iterator>
 
 
 cv::Size get_frame_size(cv::Size size, unsigned max_width) {
